@@ -1,9 +1,6 @@
 """Predictive modeling page — train, compare and persist ML models."""
 from __future__ import annotations
 
-import io
-
-import joblib
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -21,13 +18,14 @@ from iad.frontend.components.model_cards import (
 from iad.frontend.components.progress import progress_bar
 from iad.frontend.components.tables import render_dataframe
 from iad.frontend.layouts.page import section, setup_page
-from iad.frontend.performance.background import poll_active_job, render_job_status, submit_training_job
-from iad.frontend.services.training import train_enterprise, train_legacy
+from iad.frontend.performance.background import submit_training_job, sync_background_training
+from iad.frontend.services.training import persist_training_to_session, train_enterprise, train_legacy
 from iad.performance.memory import MemoryFootprint
 from iad.ml.training.registry import ModelRegistry
 from iad.state.session import (
     KEY_FEATURE_COLUMNS,
     KEY_MODEL_BUNDLE,
+    KEY_MODEL_BUNDLE_BYTES,
     KEY_TARGET_COLUMN,
     KEY_TASK_TYPE,
     KEY_TRAINING_REPORT,
@@ -50,15 +48,16 @@ if df is None:
 _mem = MemoryFootprint.from_dataframe(df)
 st.caption(f"Training data footprint: {_mem.memory_mb} MB ({_mem.rows:,} rows)")
 
-if render_job_status():
+_training_phase = sync_background_training()
+if _training_phase == "running":
     st.info("Training is running in the background. This page will update when complete.")
-    _job = poll_active_job()
-    if _job and _job.status.value == "completed" and _job.result is not None:
-        pipeline, report = _job.result
-        st.session_state[KEY_MODEL_BUNDLE] = pipeline
-        st.session_state[KEY_TRAINING_REPORT] = report
-        alerts.success(f"Background training complete — **{report.best_model_name}**.")
-        st.rerun()
+    st.stop()
+if _training_phase == "completed":
+    _report = st.session_state.get(KEY_TRAINING_REPORT)
+    _best = getattr(_report, "best_model_name", "model") if _report is not None else "model"
+    alerts.success(f"Background training complete — **{_best}**.")
+    st.rerun()
+if _training_phase == "failed":
     st.stop()
 
 columns = df.columns.tolist()
@@ -157,8 +156,7 @@ if train_clicked:
                 update(0.3, "Training models…")
                 pipeline, report = _run_training()
                 update(1.0, "Complete")
-            st.session_state[KEY_MODEL_BUNDLE] = pipeline
-            st.session_state[KEY_TRAINING_REPORT] = report
+            persist_training_to_session(pipeline, report)
             alerts.success(
                 f"Training complete — best model: **{report.best_model_name}** "
                 f"({report.engine} engine)."
@@ -271,22 +269,16 @@ with st.expander("Test-set predictions"):
         render_dataframe(report.test_predictions.head(200))
 
 with st.expander("Persist the trained model"):
-    if pipeline is not None:
-        buffer = io.BytesIO()
-        joblib.dump(
-            {
-                "pipeline": pipeline,
-                "task_type": report.task_type,
-                "target": report.target,
-                "features": report.features,
-                "best_model_name": report.best_model_name,
-            },
-            buffer,
-        )
-        buffer.seek(0)
+    bundle_bytes = st.session_state.get(KEY_MODEL_BUNDLE_BYTES)
+    if bundle_bytes is not None:
         st.download_button(
             "Download model (.joblib)",
-            data=buffer,
+            data=bundle_bytes,
             file_name=f"model_{report.best_model_name.lower().replace(' ', '_')}.joblib",
             mime="application/octet-stream",
+        )
+    elif pipeline is not None:
+        st.warning(
+            "Download is unavailable for this session (model was trained before a reload). "
+            "Click **Train models** again to refresh the downloadable bundle."
         )

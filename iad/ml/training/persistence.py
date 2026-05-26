@@ -16,6 +16,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import cloudpickle
 import joblib
 from sklearn.pipeline import Pipeline
 
@@ -69,7 +70,7 @@ def save_bundle(
         "target": model_card.target,
         "features": list(model_card.features),
     }
-    joblib.dump(bundle, target)
+    joblib.dump(bundle, target, pickle_module=cloudpickle)
     logger.info(
         "bundle saved",
         extra={"ctx_path": str(target), "ctx_model": model_card.name, "ctx_target": model_card.target},
@@ -100,7 +101,7 @@ def load_bundle(path: Path | str, *, trusted_path_only: bool = True) -> tuple[Pi
             user_message="Only .joblib model bundles are supported.",
         )
 
-    payload = joblib.load(resolved)
+    payload = joblib.load(resolved, pickle_module=cloudpickle)
     if not isinstance(payload, dict) or "pipeline" not in payload:
         raise IADError(
             f"file at {path} is not an IAD bundle",

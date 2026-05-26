@@ -129,17 +129,26 @@ def confusion_matrix_heatmap(
     *,
     title: str = "Confusion matrix",
 ) -> None:
-    fig = px.imshow(
-        matrix,
-        labels=dict(x=labels, y=labels),
-        x=labels,
-        y=labels,
-        text_auto=True,
-        aspect="equal",
-        color_continuous_scale="Blues",
-        title=title,
+    # px.imshow treats ``labels`` / categorical x,y as axis *titles* in recent Plotly — use Heatmap.
+    text = [[str(cell) for cell in row] for row in matrix]
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=matrix,
+            x=labels,
+            y=labels,
+            text=text,
+            texttemplate="%{text}",
+            hovertemplate="Actual: %{y}<br>Predicted: %{x}<br>Count: %{z}<extra></extra>",
+            colorscale="Blues",
+        )
     )
-    fig.update_layout(xaxis_title="Predicted", yaxis_title="Actual")
+    fig.update_layout(
+        title=title,
+        xaxis_title="Predicted",
+        yaxis_title="Actual",
+        xaxis=dict(type="category"),
+        yaxis=dict(type="category", autorange="reversed"),
+    )
     render_plotly(fig)
 
 

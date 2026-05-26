@@ -142,3 +142,30 @@ def train_enterprise(
 def get_training_service() -> TrainingService:
     """Return a shared TrainingService (not cached — safe for tests)."""
     return TrainingService(ModelRegistry.default())
+
+
+def persist_training_to_session(pipeline: Pipeline, report: UnifiedTrainingReport) -> None:
+    """Store pipeline, report, and cloudpickle bytes for download."""
+    from iad.ml.training.serialize import serialize_training_artifact
+    from iad.state.session import (
+        KEY_MODEL_BUNDLE,
+        KEY_MODEL_BUNDLE_BYTES,
+        KEY_TRAINING_REPORT,
+        state_set,
+    )
+
+    training_result = getattr(report, "training_result", None)
+    card = training_result.model_card if training_result is not None else None
+    state_set(KEY_MODEL_BUNDLE, pipeline)
+    state_set(KEY_TRAINING_REPORT, report)
+    state_set(
+        KEY_MODEL_BUNDLE_BYTES,
+        serialize_training_artifact(
+            pipeline,
+            task_type=str(getattr(report, "task_type", "classification")),
+            target=str(getattr(report, "target", "")),
+            features=list(getattr(report, "features", [])),
+            best_model_name=str(getattr(report, "best_model_name", "model")),
+            model_card=card,
+        ),
+    )

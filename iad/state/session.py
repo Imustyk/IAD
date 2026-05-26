@@ -29,6 +29,7 @@ KEY_TARGET_COLUMN = "target_column"
 KEY_TASK_TYPE = "task_type"
 KEY_FEATURE_COLUMNS = "feature_columns"
 KEY_TRAINING_REPORT = "training_report"
+KEY_MODEL_BUNDLE_BYTES = "iad_model_bundle_bytes"
 
 # Future use (Phases 5-7)
 KEY_USER = "user"
@@ -52,6 +53,7 @@ _DEFAULTS: dict[str, Any] = {
     KEY_TASK_TYPE: None,
     KEY_FEATURE_COLUMNS: None,
     KEY_TRAINING_REPORT: None,
+    KEY_MODEL_BUNDLE_BYTES: None,
     KEY_USER: None,
 }
 
