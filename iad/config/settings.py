@@ -71,7 +71,7 @@ class Settings(BaseSettings):
 
     # -- Frontend (Phase 4) -------------------------------------------------
     UI_CACHE_TTL_SECONDS: int = 300
-    UI_DEFAULT_THEME: Literal["light", "dark"] = "light"
+    UI_DEFAULT_THEME: Literal["light"] = "light"
     UI_ENABLE_ENTERPRISE_ML: bool = True
 
     # -- Performance (Phase 8) ----------------------------------------------

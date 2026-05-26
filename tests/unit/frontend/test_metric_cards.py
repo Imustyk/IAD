@@ -5,7 +5,7 @@ from iad.frontend.components.metric_cards import MetricSpec
 
 
 def test_metric_spec_frozen() -> None:
-    spec = MetricSpec("Rows", "1,000", delta="+5%", delta_direction="positive", icon="📋")
+    spec = MetricSpec("Rows", "1,000", delta="+5%", delta_direction="positive")
     assert spec.label == "Rows"
     assert spec.value == "1,000"
     assert spec.delta_direction == "positive"

@@ -40,7 +40,10 @@ def render_model_card(entry: LeaderboardEntry) -> None:
         cv_text = f'<div style="font-size:0.85rem;color:var(--iad-text-muted)">CV: {entry.cv_mean:.4f}{std}</div>'
     time_text = ""
     if entry.train_time_s is not None:
-        time_text = f'<div style="font-size:0.85rem;color:var(--iad-text-muted)">⏱ {entry.train_time_s:.2f}s</div>'
+        time_text = (
+            f'<div style="font-size:0.85rem;color:var(--iad-text-muted)">'
+            f"Train time: {entry.train_time_s:.2f}s</div>"
+        )
 
     st.markdown(
         f"""

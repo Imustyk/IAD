@@ -27,7 +27,6 @@ from src.utils import (
 
 setup_page(
     "Diagnostic Analysis",
-    icon="🔍",
     caption="Step 3 — correlations, group differences, hypothesis tests and outliers.",
 )
 
@@ -41,11 +40,11 @@ cat_cols = categorical_columns(df)
 
 tab_corr, tab_groups, tab_tests, tab_outliers, tab_pairs = st.tabs(
     [
-        "🧲 Correlations",
-        "👥 Group comparisons",
-        "🧪 Hypothesis tests",
-        "🚩 Outliers",
-        "🔗 Pairwise plots",
+        "Correlations",
+        "Group comparisons",
+        "Hypothesis tests",
+        "Outliers",
+        "Pairwise plots",
     ]
 )
 

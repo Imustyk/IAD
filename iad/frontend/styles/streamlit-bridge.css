@@ -1,0 +1,304 @@
+/* Light SaaS dashboard — Streamlit widget bridge */
+
+/* Hide Streamlit's auto page list (we use custom grouped nav) */
+[data-testid="stSidebarNav"],
+section[data-testid="stSidebar"] [data-testid="stSidebarNav"] {
+  display: none !important;
+}
+
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+header[data-testid="stHeader"] {
+  background: transparent !important;
+}
+
+.stApp {
+  background: #f9fafb !important;
+}
+
+.main .block-container {
+  padding: 1.5rem 1.5rem 3rem !important;
+  max-width: var(--iad-content-max-width) !important;
+}
+
+@media (max-width: 768px) {
+  .main .block-container {
+    padding: 1rem 0.75rem 2rem !important;
+  }
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+  background: #ffffff !important;
+  border-right: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+section[data-testid="stSidebar"] .block-container {
+  padding: 1rem 0.75rem !important;
+}
+
+.main p, .main label, .main .stMarkdown, .main span {
+  color: #111827;
+}
+
+/* --- Buttons (always visible) --- */
+.stButton > button,
+.stFormSubmitButton > button,
+[data-testid="stFormSubmitButton"] > button,
+[data-testid="baseButton-primary"],
+button[kind="primary"],
+button[kind="primaryFormSubmit"] {
+  background-color: #2563eb !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: 1px solid #2563eb !important;
+  border-radius: 0.75rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  padding: 0.625rem 1.25rem !important;
+  min-height: 2.5rem !important;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25) !important;
+  transition: all 200ms ease !important;
+}
+
+.stButton > button:hover,
+.stFormSubmitButton > button:hover,
+button[kind="primary"]:hover,
+button[kind="primaryFormSubmit"]:hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.35) !important;
+}
+
+.stButton > button:active,
+.stFormSubmitButton > button:active {
+  transform: translateY(0);
+}
+
+/* Secondary */
+.stButton > button[kind="secondary"],
+button[kind="secondary"] {
+  background-color: #ffffff !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+  background-color: #f9fafb !important;
+  border-color: #9ca3af !important;
+  color: #111827 !important;
+}
+
+/* Default / tertiary buttons */
+.stButton > button:not([kind="primary"]):not([kind="secondary"]) {
+  background-color: #ffffff !important;
+  color: #374151 !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Disabled — still visible */
+.stButton > button:disabled,
+.stFormSubmitButton > button:disabled,
+button:disabled {
+  background-color: #e5e7eb !important;
+  color: #6b7280 !important;
+  border: 1px solid #d1d5db !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Page links (sidebar nav) */
+section[data-testid="stSidebar"] [data-testid="stPageLink"] {
+  margin-bottom: 0.125rem;
+}
+section[data-testid="stSidebar"] [data-testid="stPageLink"] a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #4b5563 !important;
+  text-decoration: none !important;
+  border: 1px solid transparent !important;
+  transition: all 200ms ease !important;
+}
+section[data-testid="stSidebar"] [data-testid="stPageLink"] a:hover {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+}
+section[data-testid="stSidebar"] [data-testid="stPageLink"] a[aria-current="page"] {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border-color: #bfdbfe !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.08) !important;
+}
+
+/* Main area page links */
+.main [data-testid="stPageLink"] a {
+  color: #2563eb !important;
+  font-weight: 600 !important;
+}
+
+/* Inputs */
+.stTextInput input,
+.stTextArea textarea,
+.stNumberInput input,
+.stSelectbox [data-baseweb="select"] > div,
+div[data-baseweb="select"] > div {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  transition: border-color 200ms, box-shadow 200ms !important;
+}
+.stTextInput input:focus,
+.stTextArea textarea:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+  border-bottom: 1px solid #e5e7eb !important;
+  gap: 0 !important;
+}
+.stTabs [data-baseweb="tab"] {
+  color: #6b7280 !important;
+  font-weight: 500 !important;
+  border-bottom: 2px solid transparent !important;
+  padding: 0.75rem 1rem !important;
+}
+.stTabs [aria-selected="true"] {
+  color: #2563eb !important;
+  border-bottom-color: #2563eb !important;
+}
+.stTabs [data-baseweb="tab-panel"] {
+  padding-top: 1.25rem !important;
+}
+
+/* Cards: expanders & bordered blocks */
+[data-testid="stExpander"] {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 1rem !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  margin-bottom: 0.75rem;
+}
+.streamlit-expanderHeader,
+[data-testid="stExpander"] summary {
+  background: #f9fafb !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 1rem !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Metrics */
+[data-testid="stMetric"] {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Tables */
+[data-testid="stDataFrame"] {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* File uploader */
+[data-testid="stFileUploader"] {
+  border: 2px dashed #d1d5db !important;
+  border-radius: 1rem !important;
+  background: #f9fafb !important;
+}
+[data-testid="stFileUploader"]:hover {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+}
+
+/* Alerts */
+.stAlert {
+  border-radius: 0.75rem !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Progress & spinner */
+.stProgress > div > div > div {
+  background: #2563eb !important;
+  border-radius: 9999px !important;
+}
+
+hr.iad-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
+}
+
+/* Status pills */
+.iad-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+}
+.iad-status-pill.ok { background: #ecfdf5; color: #059669; }
+.iad-status-pill.warn { background: #fffbeb; color: #d97706; }
+.iad-status-pill.info { background: #eff6ff; color: #2563eb; }
+
+/* Nav group labels */
+.iad-nav-group-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  margin: 1rem 0 0.375rem 0.25rem;
+}
+
+/* Empty state */
+.iad-empty-state {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed #d1d5db;
+  border-radius: 1rem;
+  background: #f9fafb;
+  color: #6b7280;
+}
+
+/* Auth card */
+.iad-auth-wrap {
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+[data-testid="stAppViewContainer"] > .main {
+  animation: iad-fade-in 0.2s ease;
+}
+@keyframes iad-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

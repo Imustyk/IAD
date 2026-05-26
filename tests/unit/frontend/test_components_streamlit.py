@@ -55,10 +55,11 @@ def test_theme_helpers(monkeypatch) -> None:
     mock_st = MagicMock()
     mock_st.session_state = {}
     monkeypatch.setattr(theme, "st", mock_st)
-    assert theme.get_theme() in ("light", "dark")
+    assert theme.get_theme() == "light"
     theme.set_theme("dark")
-    assert theme.get_theme() == "dark"
+    assert theme.get_theme() == "light"
     theme.inject_css()
+    assert theme.get_theme() == "light"
 
 
 @pytest.mark.unit

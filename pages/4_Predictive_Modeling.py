@@ -40,7 +40,6 @@ logger = get_logger("iad.frontend.predictive")
 
 setup_page(
     "Predictive Modeling",
-    icon="🤖",
     caption="Step 4 — train and benchmark ML models; keep the best for inference.",
 )
 
@@ -93,7 +92,7 @@ use_enterprise = st.toggle(
     help="When off, uses the original sklearn-only training path for full backward compatibility.",
 )
 
-with st.expander("⚙️ Training settings", expanded=False):
+with st.expander("Training settings", expanded=False):
     col_a, col_b, col_c = st.columns(3)
     with col_a:
         test_size = st.slider("Test size", 0.1, 0.4, 0.2, 0.05)
@@ -120,7 +119,7 @@ use_background = st.checkbox(
     value=settings.PERF_BACKGROUND_TRAINING,
 )
 
-train_clicked = st.button("🚀 Train models", type="primary")
+train_clicked = st.button("Train models", type="primary")
 
 if train_clicked:
     try:
@@ -267,11 +266,11 @@ with right:
             top["importance"].astype(float).tolist(),
         )
 
-with st.expander("🔬 Test-set predictions"):
+with st.expander("Test-set predictions"):
     if report.test_predictions is not None:
         render_dataframe(report.test_predictions.head(200))
 
-with st.expander("💾 Persist the trained model"):
+with st.expander("Persist the trained model"):
     if pipeline is not None:
         buffer = io.BytesIO()
         joblib.dump(
@@ -286,7 +285,7 @@ with st.expander("💾 Persist the trained model"):
         )
         buffer.seek(0)
         st.download_button(
-            "⬇️ Download model (.joblib)",
+            "Download model (.joblib)",
             data=buffer,
             file_name=f"model_{report.best_model_name.lower().replace(' ', '_')}.joblib",
             mime="application/octet-stream",

@@ -14,7 +14,6 @@ from src.utils import require_dataset
 
 setup_page(
     "Export & Reports",
-    icon="📄",
     caption="Phase 13 — download PDF/DOCX reports, charts, and metric tables.",
 )
 

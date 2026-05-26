@@ -17,7 +17,6 @@ from src.utils import SESSION_KEYS, require_dataset
 
 setup_page(
     "Prescriptive Analysis",
-    icon="💡",
     caption="Step 6 (optional) — what-if scenarios and actionable recommendations.",
 )
 

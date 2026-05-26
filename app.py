@@ -18,7 +18,7 @@ settings = get_settings()
 logger = get_logger("iad.frontend.home")
 
 # setup_page: config → session → auth → CSS → sidebar → title shell
-setup_page("Home", icon="📊", caption="End-to-end analytics workspace — from raw data to deployed models.")
+setup_page("Home")
 
 logger.info(
     "rendering home page",

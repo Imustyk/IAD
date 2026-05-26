@@ -1,10 +1,4 @@
-"""Theme injection and dark-mode toggle for Streamlit.
-
-Streamlit does not expose a first-class dark-mode API for custom CSS, so we
-inject a ``<style>`` block on every rerun and drive the theme via a
-``data-theme`` attribute on ``<html>`` and ``.stApp``. The toggle state is
-persisted in ``st.session_state["iad_theme"]``.
-"""
+"""Light-theme CSS injection for Streamlit shell and widgets."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -14,104 +8,79 @@ import streamlit as st
 from iad.config.settings import get_settings
 
 THEME_KEY = "iad_theme"
-DEFAULT_THEME = "light"  # fallback when settings are unavailable
+DEFAULT_THEME = "light"
 
 
 def get_theme() -> str:
-    """Return the active theme name ('light' or 'dark')."""
-    if THEME_KEY not in st.session_state:
-        settings = get_settings()
-        default = settings.UI_DEFAULT_THEME
-        if default not in ("light", "dark"):
-            default = "light"
-        st.session_state[THEME_KEY] = default
-    return st.session_state[THEME_KEY]
+    st.session_state[THEME_KEY] = "light"
+    return "light"
 
 
-def set_theme(theme: str) -> None:
-    if theme not in ("light", "dark"):
-        theme = "light"
-    st.session_state[THEME_KEY] = theme
+def set_theme(_theme: str) -> None:
+    st.session_state[THEME_KEY] = "light"
 
 
 def _read_css_file(path: Path) -> str:
     return path.read_text(encoding="utf-8") if path.exists() else ""
 
 
-def _sync_theme_dom(theme: str) -> None:
-    """Apply ``data-theme`` on ``<html>`` and Streamlit's root so token overrides work."""
-    st.markdown(
-        f"""
-        <script>
-        (function() {{
-          const theme = {theme!r};
-          document.documentElement.setAttribute("data-theme", theme);
-          const app = window.parent.document.querySelector(".stApp")
-            || document.querySelector(".stApp");
-          if (app) app.setAttribute("data-theme", theme);
-        }})();
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
+def _fonts_link() -> str:
+    return """
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    """
 
 
 def inject_css() -> None:
-    """Inject the design-system CSS into the active Streamlit page."""
     style_dir = Path(__file__).parent
     tokens_css = _read_css_file(style_dir / "tokens.css")
     components_css = _read_css_file(style_dir / "components.css")
+    bridge_css = _read_css_file(style_dir / "streamlit-bridge.css")
 
-    theme = get_theme()
+    st.markdown(_fonts_link(), unsafe_allow_html=True)
     st.markdown(
         f"""
         <style>
         html, body, [data-testid="stAppViewContainer"] {{
-          background: var(--iad-bg) !important;
-          color: var(--iad-text) !important;
-          font-family: var(--iad-font-sans) !important;
+          font-family: 'Inter', var(--iad-font-sans), system-ui, sans-serif !important;
+          background: #f9fafb !important;
+          color: #111827 !important;
+          color-scheme: light !important;
         }}
-        html[data-theme="{theme}"],
-        .stApp[data-theme="{theme}"],
-        [data-theme="{theme}"] {{
-          color-scheme: {"dark" if theme == "dark" else "light"};
+        .main .block-container {{
+          max-width: 1100px !important;
+          padding-top: 1.25rem !important;
+          padding-bottom: 2.5rem !important;
+        }}
+        iframe[title="streamlit_components_v1.html"] {{
+          border: none !important;
+          width: 100% !important;
         }}
         {tokens_css}
         {components_css}
+        {bridge_css}
         </style>
         """,
         unsafe_allow_html=True,
     )
-    _sync_theme_dom(theme)
-
-
-def theme_toggle_widget(key: str = "theme_toggle", label: str = "Dark mode") -> None:
-    """Render a sidebar-friendly dark-mode toggle."""
-    current = get_theme() == "dark"
-    toggled = st.toggle(label, value=current, key=key)
-    if toggled != current:
-        set_theme("dark" if toggled else "light")
-        st.rerun()
 
 
 def page_config(
     title: str,
-    icon: str = "📊",
+    icon: str | None = None,
     layout: str = "wide",
     *,
     inject_styles: bool = True,
 ) -> None:
-    """Standardised ``st.set_page_config`` wrapper.
-
-    ``st.set_page_config`` must be the first Streamlit command on a page;
-    CSS injection runs immediately after.
-    """
     settings = get_settings()
-    st.set_page_config(
-        page_title=f"{title} · {settings.APP_NAME}",
-        page_icon=icon,
-        layout=layout,
-        initial_sidebar_state="expanded",
-    )
+    config: dict[str, object] = {
+        "page_title": f"{title} · {settings.APP_NAME}",
+        "layout": layout,
+        "initial_sidebar_state": "expanded",
+    }
+    if icon:
+        config["page_icon"] = icon
+    st.set_page_config(**config)  # type: ignore[arg-type]
     if inject_styles:
         inject_css()

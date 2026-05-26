@@ -17,7 +17,6 @@ from src.utils import SESSION_KEYS, require_dataset
 
 setup_page(
     "Apply Model to New Data",
-    icon="🎯",
     caption="Step 5 — score single rows, batch CSVs, or load a saved model bundle.",
 )
 
@@ -31,7 +30,7 @@ features = st.session_state.get(SESSION_KEYS["feature_columns"])
 task_type = st.session_state.get(SESSION_KEYS["task_type"])
 target = st.session_state.get(SESSION_KEYS["target_column"])
 
-with st.expander("📦 Load a saved model bundle (.joblib)"):
+with st.expander("Load a saved model bundle (.joblib)"):
     uploaded = st.file_uploader("Upload .joblib", type=["joblib"], key="model_upload")
     if uploaded is not None:
         try:
@@ -74,7 +73,7 @@ st.success(
 df = require_dataset()
 
 
-tab_single, tab_batch = st.tabs(["✏️ Single record", "📂 Batch CSV"])
+tab_single, tab_batch = st.tabs(["Single record", "Batch CSV"])
 
 
 with tab_single:
@@ -178,7 +177,7 @@ with tab_batch:
                 st.dataframe(scored.head(200), use_container_width=True)
                 csv_bytes = scored.to_csv(index=False).encode("utf-8")
                 st.download_button(
-                    "⬇️ Download scored CSV",
+                    "Download scored CSV",
                     data=csv_bytes,
                     file_name="predictions.csv",
                     mime="text/csv",

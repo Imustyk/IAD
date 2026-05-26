@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from iad.frontend.components.metric_cards import MetricSpec, render_metric_row
-from iad.frontend.components.tables import render_dataframe, render_preview
+from iad.frontend.components.tables import format_schema_sample, render_dataframe, render_preview
 from iad.frontend.components import alerts
 from iad.frontend.components.uploaders import url_loader
 from iad.config import get_settings
@@ -26,14 +26,13 @@ settings = get_settings()
 
 setup_page(
     "Data Loading",
-    icon="📥",
     caption="Step 1 — bring data in from a file, a public URL or a curated sample dataset.",
 )
 
 tab_sample, tab_upload, tab_url = st.tabs([
-    "🎲 Sample datasets",
-    "📁 Upload file",
-    "🌐 From URL",
+    "Sample datasets",
+    "Upload file",
+    "From URL",
 ])
 
 
@@ -105,25 +104,25 @@ if view.was_sampled:
 
 missing_pct = df.isna().sum().sum() / max(df.size, 1) * 100
 render_metric_row([
-    MetricSpec("Rows", f"{df.shape[0]:,}", icon="📋"),
-    MetricSpec("Columns", f"{df.shape[1]:,}", icon="📐"),
-    MetricSpec("Missing cells", f"{int(df.isna().sum().sum()):,}", delta=f"{missing_pct:.1f}%", icon="⚠️"),
-    MetricSpec("Duplicate rows", f"{int(df.duplicated().sum()):,}", icon="🔁"),
+    MetricSpec("Rows", f"{df.shape[0]:,}"),
+    MetricSpec("Columns", f"{df.shape[1]:,}"),
+    MetricSpec("Missing cells", f"{int(df.isna().sum().sum()):,}", delta=f"{missing_pct:.1f}%"),
+    MetricSpec("Duplicate rows", f"{int(df.duplicated().sum()):,}"),
 ])
 
 render_preview(df, n=50, title=None)
 
 with st.expander("Schema & data types"):
     schema = pd.DataFrame({
-        "column": df.columns,
+        "column": df.columns.astype(str),
         "dtype": df.dtypes.astype(str).values,
-        "non_null": df.notna().sum().values,
-        "unique": df.nunique(dropna=True).values,
-        "sample": [df[c].dropna().head(1).tolist() for c in df.columns],
+        "non_null": df.notna().sum().astype(int).values,
+        "unique": df.nunique(dropna=True).astype(int).values,
+        "sample": [format_schema_sample(df[c]) for c in df.columns],
     })
-    render_dataframe(schema)
+    render_dataframe(schema, height=min(35 * (len(schema) + 1), 480))
 
-with st.expander("⚙️ Data hygiene"):
+with st.expander("Data hygiene"):
     cols_to_parse = st.multiselect(
         "Parse these columns as datetime",
         [c for c in df.columns if not pd.api.types.is_datetime64_any_dtype(df[c])],

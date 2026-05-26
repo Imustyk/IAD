@@ -11,20 +11,32 @@ from iad.core.logging import get_logger
 logger = get_logger(__name__)
 
 
-def success(message: str, *, icon: str = "✅") -> None:
-    st.success(f"{icon} {message}")
+def _message(text: str, prefix: str | None) -> str:
+    if prefix:
+        return f"{prefix} {text}"
+    return text
 
 
-def warning(message: str, *, icon: str = "⚠️") -> None:
-    st.warning(f"{icon} {message}")
+def success(message: str, *, prefix: str | None = None) -> None:
+    st.success(_message(message, prefix))
 
 
-def info(message: str, *, icon: str = "ℹ️") -> None:
-    st.info(f"{icon} {message}")
+def warning(message: str, *, prefix: str | None = None) -> None:
+    st.warning(_message(message, prefix))
 
 
-def error(message: str, *, icon: str = "❌", show_details: bool = False, exc: Exception | None = None) -> None:
-    st.error(f"{icon} {message}")
+def info(message: str, *, prefix: str | None = None) -> None:
+    st.info(_message(message, prefix))
+
+
+def error(
+    message: str,
+    *,
+    prefix: str | None = None,
+    show_details: bool = False,
+    exc: Exception | None = None,
+) -> None:
+    st.error(_message(message, prefix))
     if exc is not None:
         logger.exception("UI error: %s", message, exc_info=exc)
     if show_details and exc is not None:
@@ -33,10 +45,7 @@ def error(message: str, *, icon: str = "❌", show_details: bool = False, exc: E
 
 
 def no_dataset_hint(page_name: str = "this page") -> None:
-    info(
-        f"No dataset loaded. Open **Data Loading** first, then return to {page_name}.",
-        icon="📥",
-    )
+    info(f"No dataset loaded. Open **Data loading** first, then return to {page_name}.")
 
 
 def render_status_pill(label: str, status: str) -> None:

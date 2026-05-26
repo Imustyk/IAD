@@ -6,7 +6,6 @@ from iad.frontend.styles.theme import (
     inject_css,
     page_config,
     set_theme,
-    theme_toggle_widget,
 )
 
 __all__ = [
@@ -16,5 +15,4 @@ __all__ = [
     "inject_css",
     "page_config",
     "set_theme",
-    "theme_toggle_widget",
 ]

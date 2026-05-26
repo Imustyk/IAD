@@ -72,14 +72,14 @@ def handle_error(exc: BaseException, *, user_facing: bool = True) -> None:
             details = ""
             if exc.context:
                 details = " (" + ", ".join(f"{k}={v}" for k, v in exc.context.items()) + ")"
-            _streamlit_safe_render(f"❗ {exc.user_message}{details}", exc=exc)
+            _streamlit_safe_render(f"{exc.user_message}{details}", exc=exc)
         return
 
     logger.exception("unhandled exception: %s", exc, extra={"ctx_type": type(exc).__name__})
     capture_exception(exc, source="streamlit")
     if user_facing:
         _streamlit_safe_render(
-            "💥 Unexpected error. The incident has been logged. "
+            "Unexpected error. The incident has been logged. "
             "Please retry or contact the platform team.",
             exc=exc,
         )

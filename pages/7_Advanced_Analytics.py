@@ -11,6 +11,7 @@ from iad.frontend.layouts.page import setup_page
 from iad.ml.anomaly import AnomalyService
 from iad.ml.clustering import ClusteringService
 from iad.ml.forecasting import ForecastingService, prophet_available
+from iad.ml.forecasting.prepare import discover_datetime_columns
 from iad.ml.nlp import NLPService
 from iad.ml.nlp.availability import sentence_transformers_available, vader_available
 from iad.ml.recommendation import RecommendationService
@@ -18,7 +19,6 @@ from src.utils import numeric_columns, require_dataset
 
 setup_page(
     "Advanced Analytics",
-    icon="🧠",
     caption="Phase 11 — NLP, time series, clustering, anomaly detection, and recommendations.",
 )
 
@@ -28,16 +28,10 @@ if df is None:
 
 text_cols = [c for c in df.columns if df[c].dtype == object or str(df[c].dtype) == "string"]
 num_cols = numeric_columns(df)
-date_cols = [c for c in df.columns if pd.api.types.is_datetime64_any_dtype(df[c])]
-if not date_cols:
-    date_cols = [
-        c
-        for c in df.columns
-        if df[c].dtype == object and pd.to_datetime(df[c], errors="coerce").notna().mean() > 0.8
-    ]
+date_cols = discover_datetime_columns(df)
 
 tab_nlp, tab_ts, tab_cluster, tab_anomaly, tab_rec = st.tabs(
-    ["💬 NLP", "📈 Time series", "🧩 Clustering", "🚨 Anomaly", "🎯 Recommendations"]
+    ["NLP", "Time series", "Clustering", "Anomaly", "Recommendations"]
 )
 
 nlp = NLPService()
@@ -119,12 +113,22 @@ with tab_nlp:
 
 
 with tab_ts:
+    if not date_cols:
+        st.warning(
+            "No date/time column detected in this dataset. "
+            "Load data with real dates (e.g. monthly sales) or use **Data loading** to parse a column as datetime."
+        )
     if not num_cols:
         st.info("Need a numeric value column for forecasting.")
+    elif not date_cols:
+        pass
     else:
-        dt_options = date_cols or [c for c in df.columns if c not in num_cols]
-        dt_col = st.selectbox("Datetime column", dt_options or num_cols, key="adv_dt_col")
-        val_col = st.selectbox("Value column", num_cols, key="adv_val_col")
+        dt_col = st.selectbox("Datetime column", date_cols, key="adv_dt_col")
+        value_options = [c for c in num_cols if c != dt_col]
+        if not value_options:
+            st.error("No numeric column available for values besides the datetime column.")
+            st.stop()
+        val_col = st.selectbox("Value column", value_options, key="adv_val_col")
         horizon = st.slider("Forecast horizon", 3, 60, 14, key="adv_horizon")
 
         if st.button("Decompose series", key="btn_decompose"):

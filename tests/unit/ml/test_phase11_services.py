@@ -9,7 +9,7 @@ from iad.ml.anomaly import AnomalyService
 from iad.ml.clustering import ClusteringService
 from iad.ml.clustering.reduction import project_pca
 from iad.ml.forecasting import ForecastingService
-from iad.ml.forecasting.prepare import prepare_series
+from iad.ml.forecasting.prepare import discover_datetime_columns, prepare_series
 from iad.ml.nlp import NLPService
 from iad.ml.nlp.embeddings import embed_text_column
 from iad.ml.nlp.sentiment import analyze_sentiment
@@ -72,6 +72,28 @@ def test_sentiment_empty_column() -> None:
 def test_prepare_series(ts_df) -> None:
     series = prepare_series(ts_df, datetime_column="month", value_column="sales")
     assert len(series) == len(ts_df)
+
+
+@pytest.mark.unit
+def test_prepare_series_rejects_non_dates() -> None:
+    df = pd.DataFrame({
+        "label": ["malignant", "benign", "malignant"],
+        "value": [1.0, 2.0, 3.0],
+    })
+    with pytest.raises(SchemaError, match="No valid rows"):
+        prepare_series(df, datetime_column="label", value_column="value")
+
+
+@pytest.mark.unit
+def test_discover_datetime_columns() -> None:
+    df = pd.DataFrame({
+        "id": [1, 2, 3],
+        "when": ["2020-01-01", "2020-02-01", "2020-03-01"],
+        "x": [1.0, 2.0, 3.0],
+    })
+    cols = discover_datetime_columns(df)
+    assert "when" in cols
+    assert "id" not in cols
 
 
 @pytest.mark.unit

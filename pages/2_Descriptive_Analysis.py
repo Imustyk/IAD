@@ -31,7 +31,6 @@ from src.utils import (
 
 setup_page(
     "Descriptive Analysis",
-    icon="📊",
     caption="Step 2 — univariate statistics, distributions, value counts and missing-data analysis.",
 )
 
@@ -59,20 +58,20 @@ st.markdown(
 
 missing_pct = df.isna().sum().sum() / max(df.size, 1) * 100
 render_metric_row([
-    MetricSpec("Total cells", f"{df.size:,}", icon="🔢"),
-    MetricSpec("Missing cells", f"{int(df.isna().sum().sum()):,}", delta=f"{missing_pct:.1f}%", icon="⚠️"),
-    MetricSpec("Duplicate rows", f"{int(df.duplicated().sum()):,}", icon="🔁"),
-    MetricSpec("Numeric features", f"{len(num_cols)}", icon="📐"),
+    MetricSpec("Total cells", f"{df.size:,}"),
+    MetricSpec("Missing cells", f"{int(df.isna().sum().sum()):,}", delta=f"{missing_pct:.1f}%"),
+    MetricSpec("Duplicate rows", f"{int(df.duplicated().sum()):,}"),
+    MetricSpec("Numeric features", f"{len(num_cols)}"),
 ])
 
 
 tab_stats, tab_dist, tab_cats, tab_missing, tab_ts = st.tabs(
     [
-        "🧮 Summary statistics",
-        "📈 Distributions",
-        "🔠 Categorical features",
-        "🩺 Missing values",
-        "⏱️ Time series",
+        "Summary statistics",
+        "Distributions",
+        "Categorical features",
+        "Missing values",
+        "Time series",
     ]
 )
 

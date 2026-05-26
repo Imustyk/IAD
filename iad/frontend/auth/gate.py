@@ -30,9 +30,9 @@ def _render_login_form() -> None:
     with center:
         st.markdown(
             f"""
-            <div class="iad-auth-wrap">
-              <h3 style="margin-top:0;color:var(--iad-text)">Sign in</h3>
-              <p style="color:var(--iad-text-muted);font-size:0.9rem;margin-bottom:0">
+            <div class="iad-tw iad-auth-wrap p-6">
+              <h3 class="text-xl font-bold text-gray-900">Sign in</h3>
+              <p class="mt-2 text-sm text-gray-600">
                 {settings.APP_NAME} — authentication required
               </p>
             </div>

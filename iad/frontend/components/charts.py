@@ -6,14 +6,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from iad.frontend.styles.theme import get_theme
-
-# Plotly template names mapped to our themes
-_TEMPLATE_MAP = {"light": "plotly_white", "dark": "plotly_dark"}
-
-
 def _template() -> str:
-    return _TEMPLATE_MAP.get(get_theme(), "plotly_white")
+    return "plotly_white"
 
 
 def apply_chart_theme(fig: go.Figure) -> go.Figure:
