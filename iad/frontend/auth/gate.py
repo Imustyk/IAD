@@ -5,6 +5,8 @@ from typing import Any
 
 import streamlit as st
 
+from iad.frontend.streamlit_compat import button, form_submit_button
+
 from iad.config.settings import get_settings
 from iad.core.logging import get_logger
 from iad.state.session import KEY_USER, state_get, state_set
@@ -30,11 +32,9 @@ def _render_login_form() -> None:
     with center:
         st.markdown(
             f"""
-            <div class="iad-tw iad-auth-wrap p-6">
-              <h3 class="text-xl font-bold text-gray-900">Sign in</h3>
-              <p class="mt-2 text-sm text-gray-600">
-                {settings.APP_NAME} — authentication required
-              </p>
+            <div class="iad-auth-card">
+              <h3 class="iad-auth-title">Sign in</h3>
+              <p class="iad-auth-subtitle">{settings.APP_NAME} — authentication required</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -46,7 +46,7 @@ def _render_login_form() -> None:
             with st.form("login_form"):
                 email = st.text_input("Email", placeholder="you@example.com")
                 password = st.text_input("Password", type="password")
-                submitted = st.form_submit_button("Sign in", type="primary", use_container_width=True)
+                submitted = form_submit_button("Sign in", type="primary")
                 if submitted:
                     _handle_login(email, password)
 
@@ -56,7 +56,7 @@ def _render_login_form() -> None:
                 full_name = st.text_input("Full name", key="reg_name")
                 password = st.text_input("Password", type="password", key="reg_pass")
                 password2 = st.text_input("Confirm password", type="password", key="reg_pass2")
-                submitted = st.form_submit_button("Create account", use_container_width=True)
+                submitted = form_submit_button("Create account")
                 if submitted:
                     if password != password2:
                         st.error("Passwords do not match.")
@@ -149,7 +149,7 @@ def require_authentication() -> None:
         assert user is not None
         with st.sidebar:
             st.caption(f"Signed in as **{user.get('email', '')}** ({user.get('role', '')})")
-            if st.button("Sign out", use_container_width=True):
+            if button("Sign out"):
                 logout()
         return
 

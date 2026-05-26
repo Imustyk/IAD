@@ -49,13 +49,17 @@ def inject_css() -> None:
           color-scheme: light !important;
         }}
         .main .block-container {{
-          max-width: 1100px !important;
+          max-width: var(--iad-content-max-width) !important;
           padding-top: 1.25rem !important;
           padding-bottom: 2.5rem !important;
         }}
-        iframe[title="streamlit_components_v1.html"] {{
+        iframe[title="streamlit_components_v1.html"],
+        iframe[title="streamlit.iframe"],
+        [data-testid="stIFrame"] {{
           border: none !important;
           width: 100% !important;
+          max-width: 100% !important;
+          display: block !important;
         }}
         {tokens_css}
         {components_css}

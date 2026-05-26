@@ -39,7 +39,4 @@ def render_pipeline_timeline(steps: tuple[PipelineStep, ...] | list[PipelineStep
             f"</div></article>"
         )
     body = f'<div class="iad-wrap"><div class="iad-pipeline">{"".join(cards)}</div></div>'
-    # ~88px per card row; 2 rows on tablet, 1 on mobile
-    rows = (len(items) + 1) // 2 if len(items) > 4 else len(items)
-    height = max(200, min(520, rows * 100 + 24))
-    render_html_panel(body, height=height)
+    render_html_panel(body)

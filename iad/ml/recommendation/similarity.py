@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from iad.core.exceptions import AnalyticsError, SchemaError
 from iad.core.logging import get_logger
-from iad.ml.recommendation.matrix import build_user_item_matrix
+from iad.ml.recommendation.matrix import build_user_item_matrix, normalize_entity_id
 from iad.ml.recommendation.reports import RecommendationReport
 
 logger = get_logger("iad.ml.recommendation.similarity")
@@ -28,10 +28,11 @@ def cosine_item_recommendations(
         item_column=item_column,
         rating_column=rating_column,
     )
-    if target_user not in matrix.index:
+    target_key = normalize_entity_id(target_user)
+    if target_key not in matrix.index:
         raise SchemaError(
             f"User {target_user!r} not in interaction data.",
-            user_message="Pick a user that exists in the dataset.",
+            user_message="Pick a user with valid ratings in the selected columns.",
         )
 
     item_vectors = matrix.fillna(0).T.values
@@ -39,7 +40,7 @@ def cosine_item_recommendations(
     sim = cosine_similarity(item_vectors)
     sim_df = pd.DataFrame(sim, index=items, columns=items)
 
-    user_ratings = matrix.loc[target_user].dropna()
+    user_ratings = matrix.loc[target_key].dropna()
     if user_ratings.empty:
         raise AnalyticsError(
             "User has no ratings.",
@@ -68,11 +69,11 @@ def cosine_item_recommendations(
 
     logger.info(
         "cosine item recommendations",
-        extra={"user": str(target_user), "n_recs": len(ranked)},
+        extra={"user": target_key, "n_recs": len(ranked)},
     )
     return RecommendationReport(
         method="cosine_item",
-        target_user=target_user,
+        target_user=target_key,
         recommendations=ranked,
         metrics={"candidate_items": float(len(scores))},
         similarity_matrix=sim_df,

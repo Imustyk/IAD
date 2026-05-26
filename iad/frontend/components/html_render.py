@@ -1,20 +1,43 @@
-"""Reliable HTML rendering via ``st.components.v1.html`` (avoids markdown escaping)."""
+"""Reliable HTML rendering via iframe (avoids markdown escaping)."""
 from __future__ import annotations
 
 import html
 from pathlib import Path
+from typing import Literal
 
-import streamlit.components.v1 as components
+import streamlit as st
 
 _EMBED_CSS = (Path(__file__).resolve().parents[1] / "styles" / "embed.css").read_text(encoding="utf-8")
+
+PanelHeight = int | Literal["content"]
 
 
 def esc(text: str) -> str:
     return html.escape(str(text))
 
 
-def render_html_panel(body: str, *, height: int, scrolling: bool = False) -> None:
-    """Render a styled HTML fragment inside an iframe panel."""
+def _render_iframe(html_doc: str, *, height: PanelHeight = "content", scrolling: bool = False) -> None:
+    """Prefer ``st.iframe``; fall back to ``st.components.v1.html`` on older Streamlit."""
+    try:
+        st.iframe(html_doc, height=height, scrolling=scrolling)
+    except (TypeError, AttributeError):
+        import streamlit.components.v1 as components
+
+        fallback_height = height if isinstance(height, int) else 180
+        components.html(
+            html_doc,
+            height=fallback_height,
+            scrolling=scrolling or height == "content",
+        )
+
+
+def render_html_panel(
+    body: str,
+    *,
+    height: PanelHeight = "content",
+    scrolling: bool = False,
+) -> None:
+    """Render a styled HTML fragment inside an isolated iframe panel."""
     doc = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,14 +45,12 @@ def render_html_panel(body: str, *, height: int, scrolling: bool = False) -> Non
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>{_EMBED_CSS}</style>
 </head>
-<body>{body}</body>
+<body class="iad-panel">{body}</body>
 </html>"""
-    components.html(doc, height=height, scrolling=scrolling)
+    _render_iframe(doc, height=height, scrolling=scrolling)
 
 
 def render_compact_html(html_fragment: str) -> None:
-    """Single-line HTML via markdown (for tiny snippets only)."""
-    import streamlit as st
-
+    """Tiny inline HTML via markdown (sidebar snippets only)."""
     compact = " ".join(html_fragment.split())
     st.markdown(compact, unsafe_allow_html=True)

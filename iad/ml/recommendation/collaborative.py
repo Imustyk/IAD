@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from iad.core.exceptions import AnalyticsError, SchemaError
 from iad.core.logging import get_logger
-from iad.ml.recommendation.matrix import build_user_item_matrix
+from iad.ml.recommendation.matrix import build_user_item_matrix, normalize_entity_id
 from iad.ml.recommendation.reports import RecommendationReport
 
 logger = get_logger("iad.ml.recommendation.collaborative")
@@ -29,10 +29,11 @@ def user_based_collaborative_filtering(
         item_column=item_column,
         rating_column=rating_column,
     )
-    if target_user not in matrix.index:
+    target_key = normalize_entity_id(target_user)
+    if target_key not in matrix.index:
         raise SchemaError(
             f"User {target_user!r} not in interaction data.",
-            user_message="Pick a user that exists in the dataset.",
+            user_message="Pick a user with valid ratings in the selected columns.",
         )
 
     filled = matrix.fillna(0.0)
@@ -40,8 +41,8 @@ def user_based_collaborative_filtering(
     users = list(matrix.index)
     sim_df = pd.DataFrame(user_sim, index=users, columns=users)
 
-    target_idx = users.index(target_user)
-    similarities = sim_df.iloc[target_idx].drop(target_user)
+    target_idx = users.index(target_key)
+    similarities = sim_df.iloc[target_idx].drop(target_key)
     neighbors = similarities[similarities > 0].sort_values(ascending=False)
     if neighbors.empty:
         raise AnalyticsError(
@@ -49,7 +50,7 @@ def user_based_collaborative_filtering(
             user_message="Try cosine item similarity or add more interactions.",
         )
 
-    target_rated = set(matrix.loc[target_user].dropna().index)
+    target_rated = set(matrix.loc[target_key].dropna().index)
     candidate_scores: dict[object, float] = {}
     weight_sums: dict[object, float] = {}
 
@@ -79,11 +80,11 @@ def user_based_collaborative_filtering(
 
     logger.info(
         "user-based CF",
-        extra={"user": str(target_user), "neighbors": len(neighbors), "n_recs": len(ranked)},
+        extra={"user": target_key, "neighbors": len(neighbors), "n_recs": len(ranked)},
     )
     return RecommendationReport(
         method="user_collaborative",
-        target_user=target_user,
+        target_user=target_key,
         recommendations=ranked,
         metrics={
             "neighbor_count": float(len(neighbors)),

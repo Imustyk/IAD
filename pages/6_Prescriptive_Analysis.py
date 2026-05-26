@@ -6,12 +6,14 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from iad.frontend.components.charts import render_plotly
+from iad.frontend.layouts.page import setup_page
+from iad.frontend.streamlit_compat import dataframe
 from src.prescriptive import (
     generate_recommendations,
     two_factor_scenario,
     what_if_scenario,
 )
-from iad.frontend.layouts.page import setup_page
 from src.utils import SESSION_KEYS, require_dataset
 
 
@@ -91,7 +93,7 @@ def _baseline_row() -> pd.Series:
 
 base_row = _baseline_row()
 with st.expander("Baseline record"):
-    st.dataframe(pd.DataFrame([base_row]), use_container_width=True)
+    dataframe(pd.DataFrame([base_row]))
 
 
 numeric_features = [c for c in features if pd.api.types.is_numeric_dtype(df[c])]
@@ -113,12 +115,12 @@ with tab_one:
 
     if st.button("Run one-feature sweep", type="primary"):
         scenarios = what_if_scenario(pipeline, base_row, feature, grid, features, task_type)
-        st.dataframe(scenarios.head(50), use_container_width=True)
+        dataframe(scenarios.head(50))
 
         if task_type == "regression":
             fig = px.line(scenarios, x=feature, y="prediction",
                           title=f"Predicted {report.target} as {feature} varies")
-            st.plotly_chart(fig, use_container_width=True)
+            render_plotly(fig)
         else:
             proba_cols = [c for c in scenarios.columns if c.startswith("proba_")]
             if proba_cols:
@@ -131,11 +133,11 @@ with tab_one:
                 long["class"] = long["class"].str.replace("proba_", "")
                 fig = px.line(long, x=feature, y="probability", color="class",
                               title=f"Class probabilities as {feature} varies")
-                st.plotly_chart(fig, use_container_width=True)
+                render_plotly(fig)
             else:
                 fig = px.line(scenarios, x=feature, y="prediction",
                               title=f"Predicted class as {feature} varies")
-                st.plotly_chart(fig, use_container_width=True)
+                render_plotly(fig)
 
 
 with tab_two:
@@ -168,7 +170,7 @@ with tab_two:
                     title=f"Predicted {report.target} surface",
                     labels=dict(color="prediction"),
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                render_plotly(fig)
             else:
                 proba_cols = [c for c in scenarios.columns if c.startswith("proba_")]
                 if proba_cols:
@@ -185,6 +187,6 @@ with tab_two:
                         color_continuous_scale="Viridis",
                         title=f"P({target_class}) surface",
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    render_plotly(fig)
                 else:
-                    st.dataframe(scenarios.head(200), use_container_width=True)
+                    dataframe(scenarios.head(200))

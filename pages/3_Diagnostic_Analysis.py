@@ -6,6 +6,8 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from iad.frontend.streamlit_compat import dataframe
+
 from iad.frontend.components.charts import render_plotly
 from iad.frontend.layouts.page import setup_page
 from src.diagnostic import (
@@ -60,7 +62,7 @@ with tab_corr:
             color_continuous_scale="RdBu_r", zmin=-1, zmax=1,
             title=f"{method.title()} correlation matrix",
         )
-        st.plotly_chart(fig, use_container_width=True)
+        render_plotly(fig)
 
         target_options = ["—"] + num_cols
         target = st.selectbox(
@@ -74,7 +76,7 @@ with tab_corr:
             top = top_correlations(df, target=None, top_n=top_n, method=method)
         else:
             top = top_correlations(df, target=target, top_n=top_n, method=method)
-        st.dataframe(top, use_container_width=True)
+        dataframe(top)
 
 
 with tab_groups:
@@ -87,7 +89,7 @@ with tab_groups:
         with c2:
             value_col = st.selectbox("Numeric value", num_cols)
         comparison = group_comparison(df, group_col, value_col)
-        st.dataframe(comparison, use_container_width=True)
+        dataframe(comparison)
         if not comparison.empty:
             fig = px.bar(
                 comparison,
@@ -95,10 +97,10 @@ with tab_groups:
                 error_y="std",
                 title=f"Mean {value_col} per {group_col}",
             )
-            st.plotly_chart(fig, use_container_width=True)
+            render_plotly(fig)
             fig2 = px.box(df, x=group_col, y=value_col, points="outliers",
                           title=f"Distribution of {value_col} per {group_col}")
-            st.plotly_chart(fig2, use_container_width=True)
+            render_plotly(fig2)
 
 
 with tab_tests:
@@ -155,7 +157,7 @@ with tab_tests:
                 contingency = pd.crosstab(df[col_a], df[col_b])
                 fig = px.imshow(contingency, text_auto=True, aspect="auto",
                                 title=f"Contingency table: {col_a} × {col_b}")
-                st.plotly_chart(fig, use_container_width=True)
+                render_plotly(fig)
 
 
 with tab_outliers:
@@ -164,7 +166,7 @@ with tab_outliers:
     else:
         k = st.slider("IQR multiplier (k)", 1.0, 3.0, 1.5, 0.1)
         report = outliers_overview(df, k=k)
-        st.dataframe(report, use_container_width=True)
+        dataframe(report)
         if not report.empty:
             top_outlier = report.iloc[0]["column"]
             col = st.selectbox(
@@ -173,7 +175,7 @@ with tab_outliers:
                 index=num_cols.index(top_outlier) if top_outlier in num_cols else 0,
             )
             fig = px.box(df, y=col, points="all", title=f"Outlier profile — {col}")
-            st.plotly_chart(fig, use_container_width=True)
+            render_plotly(fig)
 
 
 with tab_pairs:
@@ -195,4 +197,4 @@ with tab_pairs:
                 height=700,
             )
             fig.update_traces(diagonal_visible=False, showupperhalf=False)
-            st.plotly_chart(fig, use_container_width=True)
+            render_plotly(fig)

@@ -10,7 +10,6 @@ import io
 from typing import Any
 
 import cloudpickle
-import joblib
 from sklearn.pipeline import Pipeline
 
 from iad.ml.training.reproducibility import ModelCard
@@ -56,12 +55,14 @@ def bundle_to_buffer(bundle: dict[str, Any]) -> io.BytesIO:
 
 
 def dump_bundle(path: str | Any, bundle: dict[str, Any]) -> None:
-    """Write a bundle to disk (cloudpickle via joblib for .joblib files)."""
-    joblib.dump(bundle, path, pickle_module=cloudpickle)
+    """Write a bundle to disk using cloudpickle (``.joblib`` extension for convention)."""
+    with open(path, "wb") as handle:
+        cloudpickle.dump(bundle, handle)
 
 
 def load_bundle_file(path: str | Any) -> dict[str, Any]:
-    return joblib.load(path, pickle_module=cloudpickle)
+    with open(path, "rb") as handle:
+        return cloudpickle.load(handle)
 
 
 def serialize_training_artifact(

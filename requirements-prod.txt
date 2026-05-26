@@ -1,6 +1,8 @@
 # Production runtime only (no pytest / linters).
-# Authoritative list: pyproject.toml [project.dependencies]
+# Authoritative source: pyproject.toml [project.dependencies]
+# Install: pip install -r requirements-prod.txt
 
+# Core app & analytics
 streamlit>=1.36.0
 pandas>=2.2.0
 numpy>=1.26.0
@@ -9,13 +11,19 @@ scikit-learn>=1.4.0
 scipy>=1.12.0
 statsmodels>=0.14.0
 openpyxl>=3.1.0
+xlrd>=2.0.1
+
+# Model persistence (disk bundles + Streamlit download; custom sklearn transformers)
 joblib>=1.3.0
 cloudpickle>=3.0.0
-xlrd>=2.0.1
+
+# Config & validation
 pydantic>=2.6
 pydantic-settings>=2.2
 rich>=13.7
 pandera>=0.18,<1.0
+
+# ML algorithms & tuning
 xgboost>=2.0
 lightgbm>=4.0
 catboost>=1.2
@@ -24,9 +32,13 @@ shap>=0.45
 lime>=0.2.0.1
 mlflow-skinny>=2.10
 flaml>=2.1
+
+# Database (Phase 6)
 sqlalchemy>=2.0
 alembic>=1.13
 psycopg[binary]>=3.1
+
+# API & security (Phase 7)
 fastapi>=0.111
 uvicorn[standard]>=0.29
 bcrypt>=4.0
@@ -34,10 +46,18 @@ python-jose[cryptography]>=3.3
 python-multipart>=0.0.9
 email-validator>=2.1
 httpx>=0.27
+
+# Performance (Phase 8)
 polars>=0.20
 dask[dataframe]>=2024.4
+
+# NLP (Phase 11)
 vaderSentiment>=3.3
+
+# Observability (Phase 12)
 prometheus-client>=0.20
 sentry-sdk>=2.0
+
+# Export & reporting (Phase 13)
 reportlab>=4.0
 python-docx>=1.1

@@ -11,7 +11,7 @@ import pytest
 def test_metric_cards_render(monkeypatch) -> None:
     from iad.frontend.components import metric_cards
 
-    monkeypatch.setattr(metric_cards, "st", MagicMock())
+    monkeypatch.setattr(metric_cards, "render_html_panel", MagicMock())
     spec = metric_cards.MetricSpec(label="Accuracy", value="0.95", delta="+2%")
     metric_cards.render_metric_card(spec)
     metric_cards.render_metric_row([spec, spec], columns=2)
@@ -67,6 +67,8 @@ def test_leaderboard_table_and_chart(monkeypatch) -> None:
     from iad.frontend.components import model_cards
 
     monkeypatch.setattr(model_cards, "st", MagicMock())
-    df = pd.DataFrame({"model": ["a", "b"], "primary_metric": [0.9, 0.8]})
-    model_cards.render_leaderboard_table(df, metric_col="primary_metric")
-    model_cards.render_leaderboard_chart(df)
+    monkeypatch.setattr(model_cards, "st_dataframe", MagicMock())
+    monkeypatch.setattr(model_cards, "render_plotly", MagicMock())
+    df = pd.DataFrame({"model_name": ["a", "b"], "roc_auc": [0.9, 0.8]})
+    model_cards.render_leaderboard_table(df, metric_col="roc_auc")
+    model_cards.render_leaderboard_chart(df, metric_col="roc_auc")

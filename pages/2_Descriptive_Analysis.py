@@ -5,6 +5,8 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from iad.frontend.streamlit_compat import dataframe
+
 from iad.frontend.components.charts import render_plotly
 from iad.frontend.components.metric_cards import MetricSpec, render_metric_row
 from iad.frontend.components.tables import render_dataframe
@@ -86,7 +88,7 @@ with tab_stats:
 
     if cat_cols:
         st.subheader("Categorical summary")
-        st.dataframe(categorical_summary(df, cat_cols), use_container_width=True)
+        render_dataframe(categorical_summary(df, cat_cols))
 
 
 with tab_dist:
@@ -97,10 +99,10 @@ with tab_dist:
         c1, c2 = st.columns(2)
         with c1:
             fig = px.histogram(df, x=col, marginal="box", nbins=40, title=f"Distribution of {col}")
-            st.plotly_chart(fig, use_container_width=True)
+            render_plotly(fig)
         with c2:
             fig = px.violin(df, y=col, box=True, points="outliers", title=f"Spread of {col}")
-            st.plotly_chart(fig, use_container_width=True)
+            render_plotly(fig)
 
         norm = distribution_normality(df, col)
         st.markdown("**Normality test**")
@@ -111,7 +113,7 @@ with tab_dist:
             if group_col != "—":
                 fig = px.box(df, x=group_col, y=col, points="outliers",
                              title=f"{col} by {group_col}")
-                st.plotly_chart(fig, use_container_width=True)
+                render_plotly(fig)
 
 
 with tab_cats:
@@ -126,11 +128,11 @@ with tab_cats:
             vc = value_counts_table(df, col, top_n=top_n)
         c1, c2 = st.columns([2, 3])
         with c1:
-            st.dataframe(vc, use_container_width=True)
+            dataframe(vc)
         with c2:
             fig = px.bar(vc, x=col, y="count", title=f"{col} — top {top_n} values",
                          text="percent")
-            st.plotly_chart(fig, use_container_width=True)
+            render_plotly(fig)
 
         if num_cols:
             num_for_group = st.selectbox("Average a numeric column per category", num_cols)
@@ -142,19 +144,19 @@ with tab_cats:
             )
             fig = px.bar(agg, x=col, y="mean",
                          title=f"Average {num_for_group} by {col}")
-            st.plotly_chart(fig, use_container_width=True)
+            render_plotly(fig)
 
 
 with tab_missing:
     report = missing_value_report(df)
-    st.dataframe(report, use_container_width=True)
+    dataframe(report)
     if report["missing"].sum() > 0:
         plot_data = report.head(30)
         fig = px.bar(plot_data, x="column", y="percent",
                      title="Missing values per column (%)",
                      color="dtype")
         fig.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(fig, use_container_width=True)
+        render_plotly(fig)
     else:
         st.success("No missing values detected.")
 
@@ -174,6 +176,6 @@ with tab_ts:
         else:
             fig = px.line(ts, x=date_col, y="mean",
                           title=f"Monthly mean of {value_col}")
-            st.plotly_chart(fig, use_container_width=True)
+            render_plotly(fig)
             fig2 = px.bar(ts, x=date_col, y="sum", title=f"Monthly sum of {value_col}")
-            st.plotly_chart(fig2, use_container_width=True)
+            render_plotly(fig2)

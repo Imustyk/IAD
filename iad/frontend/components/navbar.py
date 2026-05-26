@@ -6,6 +6,7 @@ import streamlit as st
 from iad.config.settings import get_settings
 from iad.frontend.components.alerts import render_status_pill
 from iad.frontend.routes import NAV_GROUPS
+from iad.frontend.streamlit_compat import page_link as _page_link
 from iad.state.session import (
     KEY_DATASET,
     KEY_DATASET_NAME,
@@ -18,9 +19,9 @@ def render_sidebar_branding() -> None:
     settings = get_settings()
     st.sidebar.markdown(
         f"""
-        <div class="iad-tw border-b border-gray-200 pb-4 mb-2">
-          <p class="text-lg font-bold tracking-tight text-blue-600">{settings.APP_NAME}</p>
-          <p class="mt-1 text-xs text-gray-500">v{settings.APP_VERSION} · {settings.ENVIRONMENT}</p>
+        <div class="iad-sidebar-brand">
+          <p class="iad-sidebar-title">{settings.APP_NAME}</p>
+          <p class="iad-sidebar-meta">v{settings.APP_VERSION} · {settings.ENVIRONMENT}</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -32,7 +33,7 @@ def render_workspace_status() -> None:
     if st.session_state.get(KEY_DATASET) is not None:
         name = st.session_state.get(KEY_DATASET_NAME) or "Dataset"
         df = st.session_state[KEY_DATASET]
-        shape = f"{df.shape[0]:,} x {df.shape[1]:,}" if hasattr(df, "shape") else ""
+        shape = f"{df.shape[0]:,} × {df.shape[1]:,}" if hasattr(df, "shape") else ""
         render_status_pill(f"{name} ({shape})", "ok")
     else:
         render_status_pill("No dataset loaded", "warn")
@@ -56,29 +57,28 @@ def render_sidebar_navigation() -> None:
         )
         for item in group.items:
             try:
-                st.sidebar.page_link(
+                _page_link(
+                    st.sidebar,
                     item.path,
                     label=item.label,
                     icon=item.icon,
-                    use_container_width=True,
+                    stretch=True,
                 )
-            except TypeError:
-                st.sidebar.page_link(item.path, label=item.label, use_container_width=True)
             except Exception:
-                st.sidebar.caption(item.label)
+                st.sidebar.caption(f"• {item.label}")
 
 
 def render_sidebar_settings() -> None:
     settings = get_settings()
     st.sidebar.markdown(
-        '<p class="iad-nav-group-label" style="margin-top:1rem">Settings</p>',
+        '<p class="iad-nav-group-label iad-nav-group-label--spaced">Settings</p>',
         unsafe_allow_html=True,
     )
     with st.sidebar.expander("Application settings", expanded=False):
-        st.markdown(f"**Environment:** {settings.ENVIRONMENT}")
-        st.markdown(f"**Version:** {settings.APP_VERSION}")
+        st.markdown(f"**Environment:** `{settings.ENVIRONMENT}`")
+        st.markdown(f"**Version:** `{settings.APP_VERSION}`")
         st.markdown(f"**Debug:** `{settings.DEBUG}`")
-        st.caption("Collapse the sidebar using the control at the top edge.")
+        st.caption("Use the arrow at the top of the sidebar to collapse navigation.")
 
 
 def setup_sidebar() -> None:

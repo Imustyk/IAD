@@ -6,6 +6,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from iad.frontend.streamlit_compat import plotly_chart as _plotly_chart
+
 def _template() -> str:
     return "plotly_white"
 
@@ -46,7 +48,12 @@ def render_plotly(
 ) -> None:
     """Render a themed Plotly figure."""
     apply_chart_theme(fig)
-    st.plotly_chart(fig, use_container_width=use_container_width, key=key)
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="#ffffff",
+        autosize=True,
+    )
+    _plotly_chart(fig, key=key, stretch=use_container_width)
 
 
 def histogram(

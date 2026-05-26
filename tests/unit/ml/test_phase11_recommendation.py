@@ -5,7 +5,54 @@ import pandas as pd
 import pytest
 
 from iad.ml.recommendation.collaborative import user_based_collaborative_filtering
+from iad.ml.recommendation.matrix import list_interaction_users, normalize_entity_id
 from iad.ml.recommendation.similarity import cosine_item_recommendations
+
+
+@pytest.mark.unit
+def test_normalize_entity_id_coerces_numeric_types() -> None:
+    assert normalize_entity_id(3) == "3"
+    assert normalize_entity_id(3.0) == "3"
+    assert normalize_entity_id("3") == "3"
+
+
+@pytest.mark.unit
+def test_user_collaborative_accepts_int_target_user() -> None:
+    df = pd.DataFrame(
+        {
+            "user": [1, 1, 2, 2, 3, 3],
+            "item": ["a", "b", "a", "c", "b", "c"],
+            "rating": [5.0, 3.0, 4.0, 2.0, 5.0, 1.0],
+        }
+    )
+    report = user_based_collaborative_filtering(
+        df,
+        user_column="user",
+        item_column="item",
+        rating_column="rating",
+        target_user=3,
+        top_n=3,
+    )
+    assert report.target_user == "3"
+    assert report.method == "user_collaborative"
+
+
+@pytest.mark.unit
+def test_list_interaction_users_excludes_invalid_ratings() -> None:
+    df = pd.DataFrame(
+        {
+            "user": [1, 2, 3],
+            "item": ["a", "b", "c"],
+            "rating": [5.0, None, "bad"],
+        }
+    )
+    users = list_interaction_users(
+        df,
+        user_column="user",
+        item_column="item",
+        rating_column="rating",
+    )
+    assert users == ["1"]
 
 
 @pytest.fixture

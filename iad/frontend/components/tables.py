@@ -6,6 +6,7 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
+from iad.frontend.streamlit_compat import dataframe as _st_dataframe
 from iad.performance.fingerprints import dataframe_fingerprint
 
 
@@ -60,11 +61,11 @@ def render_dataframe(
 ) -> None:
     """Render a styled dataframe with sensible defaults."""
     display = arrow_safe_dataframe(df) if arrow_safe else df
-    st.dataframe(
+    _st_dataframe(
         display,
         height=height,
-        use_container_width=use_container_width,
         hide_index=hide_index,
+        stretch=use_container_width,
         column_config=column_config or {},
     )
 

@@ -10,6 +10,7 @@ from iad.export import ExportService
 from iad.export.models import ExportFormat
 from iad.export.report_builder import build_report_from_session
 from iad.frontend.layouts.page import section, setup_page
+from iad.frontend.streamlit_compat import button, download_button
 from src.utils import require_dataset
 
 setup_page(
@@ -33,7 +34,7 @@ if report.metrics:
 
 section("Automated report export")
 
-if st.button("Generate full automated package (ZIP)", type="primary", use_container_width=True):
+if button("Generate full automated package (ZIP)", type="primary"):
     try:
         bundle = service.generate_automated_report(report, df=df, create_zip=True)
         st.success(
@@ -41,12 +42,11 @@ if st.button("Generate full automated package (ZIP)", type="primary", use_contai
         )
         if bundle.zip_path and bundle.zip_path.exists():
             with open(bundle.zip_path, "rb") as zf:
-                st.download_button(
+                download_button(
                     "Download ZIP bundle",
                     data=zf.read(),
                     file_name=bundle.zip_path.name,
                     mime="application/zip",
-                    use_container_width=True,
                 )
         with open(bundle.manifest_path, encoding="utf-8") as mf:
             st.json(json.load(mf))
@@ -66,51 +66,52 @@ if st.button("Generate full automated package (ZIP)", type="primary", use_contai
 
 col_pdf, col_docx, col_bundle = st.columns(3)
 
-if col_pdf.button("Generate PDF", type="primary", use_container_width=True):
-    try:
-        result = service.export_report_pdf(report)
-        st.success(f"PDF ready ({result.size_bytes:,} bytes)")
-        with open(result.path, "rb") as fh:
-            st.download_button(
-                "Download PDF",
-                data=fh.read(),
-                file_name=result.path.name,
-                mime=result.content_type,
-                use_container_width=True,
-            )
-    except Exception as exc:
-        handle_error(exc)
-
-if col_docx.button("Generate DOCX", use_container_width=True):
-    try:
-        result = service.export_report_docx(report)
-        st.success(f"DOCX ready ({result.size_bytes:,} bytes)")
-        with open(result.path, "rb") as fh:
-            st.download_button(
-                "Download DOCX",
-                data=fh.read(),
-                file_name=result.path.name,
-                mime=result.content_type,
-                use_container_width=True,
-            )
-    except Exception as exc:
-        handle_error(exc)
-
-if col_bundle.button("Full bundle", use_container_width=True):
-    try:
-        results = service.export_bundle(report)
-        st.success(f"Bundle created — {len(results)} file(s)")
-        for item in results:
-            with open(item.path, "rb") as fh:
-                st.download_button(
-                    f"Download {item.path.name}",
+with col_pdf:
+    if button("Generate PDF", type="primary"):
+        try:
+            result = service.export_report_pdf(report)
+            st.success(f"PDF ready ({result.size_bytes:,} bytes)")
+            with open(result.path, "rb") as fh:
+                download_button(
+                    "Download PDF",
                     data=fh.read(),
-                    file_name=item.path.name,
-                    mime=item.content_type,
-                    key=f"dl_{item.path.name}",
+                    file_name=result.path.name,
+                    mime=result.content_type,
                 )
-    except Exception as exc:
-        handle_error(exc)
+        except Exception as exc:
+            handle_error(exc)
+
+with col_docx:
+    if button("Generate DOCX"):
+        try:
+            result = service.export_report_docx(report)
+            st.success(f"DOCX ready ({result.size_bytes:,} bytes)")
+            with open(result.path, "rb") as fh:
+                download_button(
+                    "Download DOCX",
+                    data=fh.read(),
+                    file_name=result.path.name,
+                    mime=result.content_type,
+                )
+        except Exception as exc:
+            handle_error(exc)
+
+with col_bundle:
+    if button("Full bundle"):
+        try:
+            results = service.export_bundle(report)
+            st.success(f"Bundle created — {len(results)} file(s)")
+            for item in results:
+                with open(item.path, "rb") as fh:
+                    st.download_button(
+                        f"Download {item.path.name}",
+                        data=fh.read(),
+                        file_name=item.path.name,
+                        mime=item.content_type,
+                        key=f"dl_{item.path.name}",
+                    )
+        except Exception as exc:
+            handle_error(exc)
 
 section("Chart & metrics export")
 num_cols = [c for c in df.columns if str(df[c].dtype) != "object"]

@@ -8,7 +8,9 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from iad.frontend.components.charts import feature_importance_bar, render_plotly
+from iad.frontend.components.charts import render_plotly
+from iad.frontend.components.html_render import esc
+from iad.frontend.streamlit_compat import dataframe as st_dataframe
 
 
 @dataclass(frozen=True)
@@ -32,28 +34,25 @@ def render_model_card(entry: LeaderboardEntry) -> None:
     best_class = " best" if entry.is_best else ""
     badge = '<span class="iad-badge best">Best</span>' if entry.is_best else ""
     family_badge = (
-        f'<span class="iad-badge family">{entry.family}</span>' if entry.family else ""
+        f'<span class="iad-badge family">{esc(entry.family)}</span>' if entry.family else ""
     )
     cv_text = ""
     if entry.cv_mean is not None:
         std = f" ± {entry.cv_std:.4f}" if entry.cv_std is not None else ""
-        cv_text = f'<div style="font-size:0.85rem;color:var(--iad-text-muted)">CV: {entry.cv_mean:.4f}{std}</div>'
+        cv_text = f'<div class="iad-model-meta">CV: {entry.cv_mean:.4f}{std}</div>'
     time_text = ""
     if entry.train_time_s is not None:
-        time_text = (
-            f'<div style="font-size:0.85rem;color:var(--iad-text-muted)">'
-            f"Train time: {entry.train_time_s:.2f}s</div>"
-        )
+        time_text = f'<div class="iad-model-meta">Train time: {entry.train_time_s:.2f}s</div>'
 
     st.markdown(
         f"""
-        <div class="iad-model-card{best_class} iad-animate-in">
+        <div class="iad-model-card{best_class}">
           <div class="iad-model-card-header">
-            <strong>#{entry.rank} {entry.model_name}</strong>
+            <strong>#{entry.rank} {esc(entry.model_name)}</strong>
             <span>{badge}{family_badge}</span>
           </div>
-          <div style="font-size:1.25rem;font-weight:700;color:var(--iad-primary)">
-            {entry.primary_metric_label}: {entry.primary_metric:.4f}
+          <div class="iad-model-metric">
+            {esc(entry.primary_metric_label)}: {entry.primary_metric:.4f}
           </div>
           {cv_text}
           {time_text}
@@ -78,44 +77,8 @@ def render_leaderboard_table(
     metric_col: str,
     ascending: bool = False,
 ) -> None:
-    """Render leaderboard as a sortable dataframe."""
-    if leaderboard_df.empty:
-        st.info("No results to display.")
-        return
     sorted_df = leaderboard_df.sort_values(metric_col, ascending=ascending)
-    st.dataframe(sorted_df, use_container_width=True, hide_index=True)
-
-
-def render_leaderboard_chart(
-    leaderboard_df: pd.DataFrame,
-    *,
-    model_col: str = "model",
-    metric_col: str = "primary_metric",
-    title: str = "Model comparison",
-) -> None:
-    if leaderboard_df.empty:
-        return
-    fig = px.bar(
-        leaderboard_df.sort_values(metric_col, ascending=True),
-        x=metric_col,
-        y=model_col,
-        orientation="h",
-        title=title,
-        text=metric_col,
-    )
-    fig.update_traces(texttemplate="%{text:.4f}", textposition="outside")
-    fig.update_layout(yaxis=dict(autorange="reversed"), uniformtext_minsize=8)
-    render_plotly(fig)
-
-
-def render_feature_importance(
-    names: list[str],
-    values: list[float],
-    *,
-    top_n: int = 15,
-    title: str = "Top features",
-) -> None:
-    feature_importance_bar(names, values, title=title, top_n=top_n)
+    st_dataframe(sorted_df, stretch=True, hide_index=True)
 
 
 def entries_from_leaderboard_df(
@@ -123,52 +86,64 @@ def entries_from_leaderboard_df(
     *,
     task_type: str,
     best_model_name: str,
+    primary_metric_col: str | None = None,
 ) -> list[LeaderboardEntry]:
-    """Build cards from a leaderboard DataFrame (legacy or enterprise)."""
-    metric_key = "roc_auc" if task_type == "classification" else "r2"
-    if metric_key not in leaderboard_df.columns:
-        for alt in ("accuracy", "f1", "rmse", "mae"):
-            if alt in leaderboard_df.columns:
-                metric_key = alt
-                break
-    metric_label = metric_key.upper().replace("_", " ")
+    """Build :class:`LeaderboardEntry` list from a training report frame."""
+    if leaderboard_df.empty:
+        return []
+    metric_col = primary_metric_col or (
+        "roc_auc" if task_type == "classification" else "r2"
+    )
+    if metric_col not in leaderboard_df.columns:
+        numeric = leaderboard_df.select_dtypes(include="number").columns
+        metric_col = numeric[0] if len(numeric) else leaderboard_df.columns[0]
 
     entries: list[LeaderboardEntry] = []
-    for idx, row in enumerate(leaderboard_df.to_dict(orient="records"), start=1):
-        name = str(row.get("model") or row.get("model_name") or f"Model {idx}")
-        metric_val = float(row.get(metric_key, row.get("score", 0.0)) or 0.0)
+    for rank, row in enumerate(leaderboard_df.itertuples(), start=1):
+        name = (
+            getattr(row, "model_name", None)
+            or getattr(row, "model", None)
+            or (row[0] if hasattr(row, "__getitem__") else None)
+            or getattr(row, "Index", str(rank))
+        )
+        score = float(getattr(row, metric_col, 0.0))
+        cv_mean = getattr(row, "cv_mean", None)
+        cv_std = getattr(row, "cv_std", None)
+        train_time = getattr(row, "train_time_seconds", None) or getattr(row, "train_time_s", None)
+        family = getattr(row, "family", None)
         entries.append(
             LeaderboardEntry(
-                rank=idx,
-                model_name=name,
-                primary_metric=metric_val,
-                primary_metric_label=metric_label,
-                cv_mean=row.get("cv_mean") or row.get(f"cv_{metric_key}"),
-                cv_std=row.get("cv_std"),
-                train_time_s=row.get("train_time_s") or row.get("fit_time"),
-                is_best=(name == best_model_name),
-                family=row.get("family"),
+                rank=rank,
+                model_name=str(name),
+                primary_metric=score,
+                primary_metric_label=metric_col.replace("_", " ").upper(),
+                cv_mean=float(cv_mean) if cv_mean is not None and pd.notna(cv_mean) else None,
+                cv_std=float(cv_std) if cv_std is not None and pd.notna(cv_std) else None,
+                train_time_s=float(train_time) if train_time is not None and pd.notna(train_time) else None,
+                is_best=str(name) == best_model_name,
+                family=str(family) if family is not None else None,
             )
         )
     return entries
 
 
-def entries_from_training_report(
-    report: Any,
+def render_leaderboard_chart(
+    leaderboard_df: pd.DataFrame,
     *,
-    task_type: str | None = None,
-) -> list[LeaderboardEntry]:
-    """Convert report object or dict to leaderboard cards."""
-    if hasattr(report, "leaderboard"):
-        lb = report.leaderboard
-        tt = task_type or getattr(report, "task_type", None) or getattr(report, "task", "classification")
-        best = getattr(report, "best_model_name", None) or ""
-        if isinstance(lb, pd.DataFrame):
-            return entries_from_leaderboard_df(lb, task_type=str(tt), best_model_name=str(best))
-    if isinstance(report, dict):
-        rows = report.get("leaderboard") or report.get("results") or []
-        tt = task_type or report.get("task_type", "classification")
-        best = report.get("best_model") or report.get("best_model_name", "")
-        if isinstance(rows, pd.DataFrame):
-            return entries_from_leaderboard_df(rows, task_type=str(tt), best_model_name=str(best))
-    return []
+    metric_col: str,
+    title: str = "Model comparison",
+) -> None:
+    if leaderboard_df.empty or metric_col not in leaderboard_df.columns:
+        return
+    name_col = "model_name" if "model_name" in leaderboard_df.columns else leaderboard_df.columns[0]
+    fig = px.bar(
+        leaderboard_df.sort_values(metric_col, ascending=True),
+        x=metric_col,
+        y=name_col,
+        orientation="h",
+        title=title,
+        color=metric_col,
+        color_continuous_scale="Blues",
+    )
+    fig.update_layout(showlegend=False, height=max(280, 44 * len(leaderboard_df)))
+    render_plotly(fig)

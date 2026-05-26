@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+from iad.frontend.streamlit_compat import dataframe
+
 from iad.core.error_handler import handle_error
 from iad.core.paths import safe_filename
 from iad.frontend.layouts.page import setup_page
@@ -122,10 +124,9 @@ with tab_single:
                     .reset_index(name="probability")
                 )
                 proba_df["class"] = proba_df["class"].str.replace("proba_", "")
-                st.dataframe(proba_df.sort_values("probability", ascending=False),
-                             use_container_width=True)
+                dataframe(proba_df.sort_values("probability", ascending=False))
             with st.expander("Full row with prediction"):
-                st.dataframe(result, use_container_width=True)
+                dataframe(result)
         except Exception as exc:
             st.error(f"Prediction failed: {exc}")
 
@@ -169,12 +170,12 @@ with tab_batch:
 
     if batch_df is not None:
         st.write(f"Batch contains {batch_df.shape[0]:,} rows.")
-        st.dataframe(batch_df.head(10), use_container_width=True)
+        dataframe(batch_df.head(10))
         if st.button("Score the batch", type="primary"):
             try:
                 scored = predict(pipeline, batch_df, features, task_type)
                 st.success(f"Scored {len(scored):,} rows.")
-                st.dataframe(scored.head(200), use_container_width=True)
+                dataframe(scored.head(200))
                 csv_bytes = scored.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     "Download scored CSV",

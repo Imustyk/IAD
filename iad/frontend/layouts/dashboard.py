@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import streamlit as st
 
+from iad.frontend.streamlit_compat import form_submit_button
+
 from iad.frontend.components.metric_cards import MetricSpec, render_metric_row
 from iad.frontend.components.pipeline import render_pipeline_timeline
 from iad.frontend.components.ui import render_hero, render_section_header
@@ -79,14 +81,13 @@ def render_business_case_form() -> None:
         case["problem"] = st.text_area("Problem statement", value=case.get("problem", ""), height=72)
         case["objective"] = st.text_area("Objective", value=case.get("objective", ""), height=72)
         case["kpis"] = st.text_input("Key KPIs", value=case.get("kpis", ""))
-        if st.form_submit_button("Save business case", type="primary", use_container_width=True):
+        if form_submit_button("Save business case", type="primary"):
             st.session_state[KEY_BUSINESS_CASE] = case
             st.success("Business case saved.")
 
 
 def render_home_dashboard() -> None:
     render_hero(subtitle="Workspace overview. Use the sidebar to open each analytics stage.")
-    st.markdown("")  # spacing between iframe panels
     render_kpi_row()
     render_getting_started()
 

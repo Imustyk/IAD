@@ -24,6 +24,39 @@ def _select_column(df: pd.DataFrame, column: str) -> pd.Series:
     return selected.squeeze()
 
 
+def normalize_entity_id(value: object) -> str:
+    """Consistent string key for user/item IDs (matches pivot index labels)."""
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return ""
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    if isinstance(value, int):
+        return str(value)
+    text = str(value).strip()
+    if text.endswith(".0") and text.replace(".0", "", 1).replace("-", "", 1).isdigit():
+        return text[:-2]
+    return text
+
+
+def list_interaction_users(
+    df: pd.DataFrame,
+    *,
+    user_column: str,
+    item_column: str,
+    rating_column: str,
+) -> list[str]:
+    """Users with at least one valid rating after matrix cleaning."""
+    matrix = build_user_item_matrix(
+        df,
+        user_column=user_column,
+        item_column=item_column,
+        rating_column=rating_column,
+    )
+    return list(matrix.index)
+
+
 def build_user_item_matrix(
     df: pd.DataFrame,
     *,
@@ -45,9 +78,10 @@ def build_user_item_matrix(
     })
 
     frame["rating"] = pd.to_numeric(frame["rating"], errors="coerce")
-    frame["user"] = frame["user"].astype(str)
-    frame["item"] = frame["item"].astype(str)
+    frame["user"] = frame["user"].map(normalize_entity_id)
+    frame["item"] = frame["item"].map(normalize_entity_id)
     frame = frame.dropna(subset=["user", "item", "rating"])
+    frame = frame[(frame["user"] != "") & (frame["item"] != "")]
     if frame.empty:
         raise SchemaError(
             "No valid interactions after cleaning.",

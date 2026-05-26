@@ -17,12 +17,13 @@ def render_hero(
     badge = badge or f"v{settings.APP_VERSION} · {settings.ENVIRONMENT}"
     body = (
         f'<div class="iad-wrap"><div class="iad-hero">'
+        f'<div class="iad-hero-inner">'
         f'<span class="iad-hero-badge">{esc(badge)}</span>'
         f"<h2>{esc(title)}</h2>"
         f"<p>{esc(subtitle)}</p>"
-        f"</div></div>"
+        f"</div></div></div>"
     )
-    render_html_panel(body, height=130)
+    render_html_panel(body)
 
 
 def render_section_header(title: str, description: str | None = None) -> None:
@@ -32,7 +33,7 @@ def render_section_header(title: str, description: str | None = None) -> None:
         f"<h3>{esc(title)}</h3>{desc}"
         f"</div>"
     )
-    render_html_panel(body, height=72 if description else 48)
+    render_html_panel(body)
 
 
 def render_page_header(title: str, caption: str | None = None) -> None:
@@ -42,7 +43,7 @@ def render_page_header(title: str, caption: str | None = None) -> None:
         f"<h1>{esc(title)}</h1>{cap}"
         f"</div>"
     )
-    render_html_panel(body, height=100 if caption else 72)
+    render_html_panel(body)
 
 
 def render_empty_state(
@@ -51,11 +52,11 @@ def render_empty_state(
     *,
     hint: str | None = None,
 ) -> None:
-    hint_html = f"<p style='margin-top:0.5rem;font-size:0.75rem'>{esc(hint)}</p>" if hint else ""
+    hint_html = f'<p class="iad-empty-hint">{esc(hint)}</p>' if hint else ""
     body = (
         f'<div class="iad-wrap"><div class="iad-empty">'
         f"<strong>{esc(title)}</strong>"
         f"<p>{esc(message)}</p>{hint_html}"
         f"</div></div>"
     )
-    render_html_panel(body, height=140)
+    render_html_panel(body)

@@ -5,7 +5,10 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from iad.frontend.streamlit_compat import dataframe
+
 from iad.core.error_handler import handle_error
+from iad.core.exceptions import SchemaError
 from iad.frontend.components.charts import render_plotly
 from iad.frontend.layouts.page import setup_page
 from iad.ml.anomaly import AnomalyService
@@ -15,6 +18,7 @@ from iad.ml.forecasting.prepare import discover_datetime_columns
 from iad.ml.nlp import NLPService
 from iad.ml.nlp.availability import sentence_transformers_available, vader_available
 from iad.ml.recommendation import RecommendationService
+from iad.ml.recommendation.matrix import list_interaction_users
 from src.utils import numeric_columns, require_dataset
 
 setup_page(
@@ -65,7 +69,7 @@ with tab_nlp:
                 _run("Sentiment analysis", _sentiment)
             if report := st.session_state.get("adv_sentiment"):
                 st.metric("Mean compound", f"{report.summary['mean_compound']:.3f}")
-                st.dataframe(report.scores.head(200), use_container_width=True)
+                dataframe(report.scores.head(200))
                 dist = report.distribution_frame()
                 if not dist.empty:
                     fig = px.bar(dist, x="label", y="share", title="Sentiment distribution")
@@ -109,7 +113,7 @@ with tab_nlp:
                     words = ", ".join(topic["top_words"][:8])  # type: ignore[index]
                     st.markdown(f"**Topic {topic['topic_id']}:** {words}")
                 if topics.document_topics is not None:
-                    st.dataframe(topics.document_topics.head(100), use_container_width=True)
+                    dataframe(topics.document_topics.head(100))
 
 
 with tab_ts:
@@ -228,7 +232,7 @@ with tab_cluster:
                     )
                     render_plotly(fig)
             if cl.cluster_sizes is not None:
-                st.dataframe(cl.cluster_sizes, use_container_width=True)
+                dataframe(cl.cluster_sizes)
 
 
 with tab_anomaly:
@@ -266,7 +270,7 @@ with tab_anomaly:
         if ar := st.session_state.get("adv_anomaly"):
             st.json(ar.metrics)
             flagged = ar.flagged_frame(df)
-            st.dataframe(flagged[flagged["is_anomaly"]].head(100), use_container_width=True)
+            dataframe(flagged[flagged["is_anomaly"]].head(100))
 
 
 with tab_rec:
@@ -292,9 +296,27 @@ with tab_rec:
         rating_options or [c for c in all_cols if c not in (user_col, item_col)],
         key="adv_rec_rating",
     )
-    users = df[user_col].dropna().unique().tolist() if user_col in df.columns else []
+    users: list[str] = []
+    if len({user_col, item_col, rating_col}) == 3:
+        try:
+            users = list_interaction_users(
+                df,
+                user_column=user_col,
+                item_column=item_col,
+                rating_column=rating_col,
+            )
+        except SchemaError:
+            users = []
     if users:
-        target = st.selectbox("Target user", users[:500], key="adv_rec_target")
+        display_users = users[:500]
+        target = st.selectbox(
+            "Target user",
+            display_users,
+            key="adv_rec_target",
+            help="Only users with at least one valid numeric rating are listed.",
+        )
+        if len(users) > len(display_users):
+            st.caption(f"Showing first {len(display_users):,} of {len(users):,} users.")
         rec_method = st.radio(
             "Method",
             ["user_collaborative", "cosine_item"],
@@ -322,6 +344,9 @@ with tab_rec:
 
             _run("Recommendations", _rec)
         if rec := st.session_state.get("adv_rec"):
-            st.dataframe(rec.recommendations, use_container_width=True)
+            dataframe(rec.recommendations)
     else:
-        st.info("No users found in the selected column.")
+        st.info(
+            "No valid user–item–rating interactions for the selected columns. "
+            "Use three different columns and ensure ratings are numeric."
+        )

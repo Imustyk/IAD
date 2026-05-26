@@ -18,7 +18,7 @@ settings = get_settings()
 logger = get_logger("iad.frontend.home")
 
 # setup_page: config → session → auth → CSS → sidebar → title shell
-setup_page("Home")
+setup_page("Home", show_header=False)
 
 logger.info(
     "rendering home page",
