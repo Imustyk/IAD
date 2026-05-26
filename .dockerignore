@@ -1,0 +1,43 @@
+# Git & IDE
+.git
+.gitignore
+.cursor
+.vscode
+.idea
+*.swp
+*.swo
+
+# Python
+.venv
+venv
+__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+htmlcov
+.coverage
+dist
+build
+
+# Local data & secrets (mount as volumes in Compose)
+.env
+data/*
+!data/.gitkeep
+logs/*
+!logs/.gitkeep
+models/*
+!models/.gitkeep
+mlruns
+exports/*
+reports/*
+
+# Docs & notebooks (not needed in runtime image)
+notebooks
+docs
+*.md
+!README.md
+
+# Tests
+tests

@@ -1,0 +1,88 @@
+/* IAD Design System — CSS custom properties (light theme default) */
+
+:root {
+  /* Brand */
+  --iad-primary: #4f46e5;
+  --iad-primary-hover: #4338ca;
+  --iad-primary-muted: rgba(79, 70, 229, 0.12);
+  --iad-accent: #06b6d4;
+  --iad-success: #10b981;
+  --iad-warning: #f59e0b;
+  --iad-danger: #ef4444;
+  --iad-info: #3b82f6;
+
+  /* Surfaces */
+  --iad-bg: #f8fafc;
+  --iad-bg-elevated: #ffffff;
+  --iad-bg-muted: #f1f5f9;
+  --iad-bg-glass: rgba(255, 255, 255, 0.72);
+  --iad-border: #e2e8f0;
+  --iad-border-strong: #cbd5e1;
+
+  /* Text */
+  --iad-text: #0f172a;
+  --iad-text-secondary: #475569;
+  --iad-text-muted: #94a3b8;
+  --iad-text-inverse: #f8fafc;
+
+  /* Typography */
+  --iad-font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --iad-font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --iad-text-xs: 0.75rem;
+  --iad-text-sm: 0.875rem;
+  --iad-text-base: 1rem;
+  --iad-text-lg: 1.125rem;
+  --iad-text-xl: 1.25rem;
+  --iad-text-2xl: 1.5rem;
+  --iad-text-3xl: 1.875rem;
+
+  /* Spacing scale */
+  --iad-space-1: 0.25rem;
+  --iad-space-2: 0.5rem;
+  --iad-space-3: 0.75rem;
+  --iad-space-4: 1rem;
+  --iad-space-5: 1.25rem;
+  --iad-space-6: 1.5rem;
+  --iad-space-8: 2rem;
+
+  /* Radii */
+  --iad-radius-sm: 0.375rem;
+  --iad-radius-md: 0.5rem;
+  --iad-radius-lg: 0.75rem;
+  --iad-radius-xl: 1rem;
+  --iad-radius-full: 9999px;
+
+  /* Shadows */
+  --iad-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --iad-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --iad-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --iad-shadow-glass: 0 8px 32px rgba(15, 23, 42, 0.12);
+
+  /* Motion */
+  --iad-transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --iad-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout */
+  --iad-sidebar-width: 280px;
+  --iad-content-max-width: 1400px;
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] {
+  --iad-primary: #818cf8;
+  --iad-primary-hover: #a5b4fc;
+  --iad-primary-muted: rgba(129, 140, 248, 0.15);
+  --iad-bg: #0b1120;
+  --iad-bg-elevated: #1e293b;
+  --iad-bg-muted: #1e293b;
+  --iad-bg-glass: rgba(30, 41, 59, 0.75);
+  --iad-border: #334155;
+  --iad-border-strong: #475569;
+  --iad-text: #f1f5f9;
+  --iad-text-secondary: #cbd5e1;
+  --iad-text-muted: #64748b;
+  --iad-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --iad-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --iad-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --iad-shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.35);
+}

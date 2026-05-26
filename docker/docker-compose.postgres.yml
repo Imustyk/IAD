@@ -1,0 +1,28 @@
+# PostgreSQL for local development (Phase 6).
+# Usage: docker compose -f docker/docker-compose.postgres.yml up -d
+#
+# Then set in .env:
+#   IAD_DATABASE_URL=postgresql+psycopg://iad:iad@localhost:5432/iad
+#   IAD_DATABASE_ENABLED=true
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: iad-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: iad
+      POSTGRES_PASSWORD: iad
+      POSTGRES_DB: iad
+    ports:
+      - "5432:5432"
+    volumes:
+      - iad_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iad -d iad"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  iad_pg_data:

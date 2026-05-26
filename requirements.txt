@@ -1,0 +1,3 @@
+# Runtime dependencies (legacy install path).
+# Same packages as requirements-prod.txt / pyproject.toml [project.dependencies]
+-r requirements-prod.txt

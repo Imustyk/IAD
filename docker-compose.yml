@@ -1,0 +1,120 @@
+# IAD full stack — Streamlit + FastAPI + PostgreSQL (+ optional nginx).
+#
+# Quick start:
+#   cp .env.example .env
+#   docker compose up --build
+#
+# UI:  http://localhost:8501  (or http://localhost via nginx)
+# API: http://localhost:8000/docs
+
+name: iad
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${IAD_POSTGRES_USER:-iad}
+      POSTGRES_PASSWORD: ${IAD_POSTGRES_PASSWORD:-iad}
+      POSTGRES_DB: ${IAD_POSTGRES_DB:-iad}
+    ports:
+      - "${IAD_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - iad_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${IAD_POSTGRES_USER:-iad} -d ${IAD_POSTGRES_DB:-iad}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      IAD_DATABASE_URL: postgresql+psycopg://${IAD_POSTGRES_USER:-iad}:${IAD_POSTGRES_PASSWORD:-iad}@postgres:5432/${IAD_POSTGRES_DB:-iad}
+      IAD_DATABASE_ENABLED: "true"
+      IAD_AUTO_CREATE_DB: "false"
+      IAD_RUN_MIGRATIONS: "true"
+      IAD_CORS_ORIGINS: '["http://localhost:8501","http://localhost","http://127.0.0.1:8501"]'
+    ports:
+      - "${IAD_API_PORT:-8000}:8000"
+    volumes:
+      - iad_data:/app/data
+      - iad_models:/app/models
+      - iad_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: streamlit
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      IAD_DATABASE_URL: postgresql+psycopg://${IAD_POSTGRES_USER:-iad}:${IAD_POSTGRES_PASSWORD:-iad}@postgres:5432/${IAD_POSTGRES_DB:-iad}
+      IAD_DATABASE_ENABLED: ${IAD_DATABASE_ENABLED:-false}
+    ports:
+      - "${IAD_STREAMLIT_PORT:-8501}:8501"
+    volumes:
+      - iad_data:/app/data
+      - iad_models:/app/models
+      - iad_logs:/app/logs
+      - iad_exports:/app/exports
+    depends_on:
+      api:
+        condition: service_started
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    profiles: ["observability"]
+    restart: unless-stopped
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "${IAD_PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      - api
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    profiles: ["observability"]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${IAD_GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${IAD_GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "${IAD_GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+
+  nginx:
+    image: nginx:1.27-alpine
+    profiles: ["proxy"]
+    restart: unless-stopped
+    ports:
+      - "${IAD_HTTP_PORT:-80}:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - streamlit
+      - api
+
+volumes:
+  iad_pg_data:
+  iad_data:
+  iad_models:
+  iad_logs:
+  iad_exports:

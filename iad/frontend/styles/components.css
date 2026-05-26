@@ -1,0 +1,307 @@
+/* IAD component styles — applied via CSS variables from tokens.css */
+
+/* Hide Streamlit chrome we replace with our own */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+header[data-testid="stHeader"] {
+  background: transparent !important;
+}
+
+/* Main app container */
+.block-container {
+  padding-top: 1.5rem !important;
+  padding-bottom: 2rem !important;
+  max-width: var(--iad-content-max-width) !important;
+}
+
+/* Sidebar polish */
+section[data-testid="stSidebar"] {
+  background: var(--iad-bg-muted) !important;
+  border-right: 1px solid var(--iad-border) !important;
+}
+section[data-testid="stSidebar"] .block-container {
+  padding-top: 1.5rem !important;
+}
+
+/* Typography helpers */
+.iad-page-title {
+  font-size: var(--iad-text-3xl) !important;
+  font-weight: 700 !important;
+  color: var(--iad-text) !important;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--iad-space-2) !important;
+}
+.iad-page-caption {
+  font-size: var(--iad-text-base) !important;
+  color: var(--iad-text-secondary) !important;
+  margin-bottom: var(--iad-space-6) !important;
+}
+.iad-section-title {
+  font-size: var(--iad-text-xl) !important;
+  font-weight: 600 !important;
+  color: var(--iad-text) !important;
+  margin: var(--iad-space-6) 0 var(--iad-space-3) 0 !important;
+}
+
+/* Glass card */
+.iad-glass-card {
+  background: var(--iad-bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--iad-border);
+  border-radius: var(--iad-radius-xl);
+  padding: var(--iad-space-5);
+  box-shadow: var(--iad-shadow-glass);
+  transition: box-shadow var(--iad-transition), transform var(--iad-transition);
+}
+.iad-glass-card:hover {
+  box-shadow: var(--iad-shadow-lg);
+}
+
+/* Metric card */
+.iad-metric-card {
+  background: var(--iad-bg-elevated);
+  border: 1px solid var(--iad-border);
+  border-radius: var(--iad-radius-lg);
+  padding: var(--iad-space-4) var(--iad-space-5);
+  box-shadow: var(--iad-shadow-sm);
+  transition: transform var(--iad-transition), box-shadow var(--iad-transition);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.iad-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--iad-shadow-md);
+}
+.iad-metric-label {
+  font-size: var(--iad-text-sm);
+  color: var(--iad-text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.iad-metric-value {
+  font-size: var(--iad-text-2xl);
+  font-weight: 700;
+  color: var(--iad-text);
+  line-height: 1.1;
+}
+.iad-metric-delta {
+  font-size: var(--iad-text-sm);
+  font-weight: 500;
+}
+.iad-metric-delta.positive { color: var(--iad-success); }
+.iad-metric-delta.negative { color: var(--iad-danger); }
+.iad-metric-delta.neutral { color: var(--iad-text-muted); }
+
+/* Model leaderboard row */
+.iad-model-card {
+  background: var(--iad-bg-elevated);
+  border: 1px solid var(--iad-border);
+  border-radius: var(--iad-radius-lg);
+  padding: var(--iad-space-4);
+  margin-bottom: var(--iad-space-3);
+  transition: border-color var(--iad-transition);
+}
+.iad-model-card.best {
+  border-color: var(--iad-primary);
+  background: var(--iad-primary-muted);
+}
+.iad-model-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--iad-space-2);
+}
+.iad-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--iad-radius-full);
+  font-size: var(--iad-text-xs);
+  font-weight: 600;
+}
+.iad-badge.best { background: var(--iad-primary); color: white; }
+.iad-badge.family { background: var(--iad-bg-muted); color: var(--iad-text-secondary); }
+
+/* Workflow step cards on home */
+.iad-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: var(--iad-space-4);
+}
+.iad-workflow-step {
+  text-align: center;
+  padding: var(--iad-space-4);
+  border-radius: var(--iad-radius-lg);
+  border: 1px solid var(--iad-border);
+  background: var(--iad-bg-elevated);
+  transition: all var(--iad-transition);
+  cursor: default;
+  min-height: 120px;
+}
+.iad-workflow-step:hover {
+  border-color: var(--iad-primary);
+  transform: translateY(-3px);
+  box-shadow: var(--iad-shadow-md);
+}
+.iad-workflow-step .icon { font-size: 2rem; margin-bottom: var(--iad-space-2); }
+.iad-workflow-step .name { font-weight: 600; color: var(--iad-text); font-size: var(--iad-text-sm); }
+.iad-workflow-step .desc { font-size: var(--iad-text-xs); color: var(--iad-text-muted); margin-top: var(--iad-space-1); line-height: 1.35; }
+
+/* Sidebar navigation */
+.iad-nav-section {
+  font-size: var(--iad-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--iad-text-muted);
+  margin: var(--iad-space-3) 0 var(--iad-space-2) 0;
+}
+section[data-testid="stSidebar"] [data-testid="stPageLink"] a {
+  border-radius: var(--iad-radius-md) !important;
+  padding: 0.35rem 0.5rem !important;
+  font-size: var(--iad-text-sm) !important;
+}
+section[data-testid="stSidebar"] [data-testid="stPageLink"] a:hover {
+  background: var(--iad-primary-muted) !important;
+}
+section[data-testid="stSidebar"] [data-testid="stPageLink"] a[aria-current="page"] {
+  background: var(--iad-primary-muted) !important;
+  color: var(--iad-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* Status pills in sidebar */
+.iad-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--iad-radius-full);
+  font-size: var(--iad-text-xs);
+  font-weight: 500;
+  margin-bottom: var(--iad-space-2);
+}
+.iad-status-pill.ok { background: rgba(16, 185, 129, 0.15); color: var(--iad-success); }
+.iad-status-pill.warn { background: rgba(245, 158, 11, 0.15); color: var(--iad-warning); }
+.iad-status-pill.info { background: rgba(59, 130, 246, 0.15); color: var(--iad-info); }
+
+/* Progress bar container */
+.iad-progress-label {
+  font-size: var(--iad-text-sm);
+  color: var(--iad-text-secondary);
+  margin-bottom: var(--iad-space-1);
+}
+
+/* Tabs styling */
+.stTabs [data-baseweb="tab-list"] {
+  gap: var(--iad-space-2);
+  background: transparent;
+}
+.stTabs [data-baseweb="tab"] {
+  border-radius: var(--iad-radius-md) var(--iad-radius-md) 0 0 !important;
+  padding: var(--iad-space-2) var(--iad-space-4) !important;
+  font-weight: 500 !important;
+}
+.stTabs [aria-selected="true"] {
+  background: var(--iad-primary-muted) !important;
+  color: var(--iad-primary) !important;
+}
+
+/* Dataframe styling */
+.stDataFrame {
+  border: 1px solid var(--iad-border) !important;
+  border-radius: var(--iad-radius-md) !important;
+}
+
+/* Buttons */
+.stButton > button[kind="primary"] {
+  background: var(--iad-primary) !important;
+  border: none !important;
+  border-radius: var(--iad-radius-md) !important;
+  font-weight: 600 !important;
+  transition: background var(--iad-transition) !important;
+}
+.stButton > button[kind="primary"]:hover {
+  background: var(--iad-primary-hover) !important;
+}
+
+/* Expander */
+.streamlit-expanderHeader {
+  background: var(--iad-bg-muted) !important;
+  border-radius: var(--iad-radius-md) !important;
+  border: 1px solid var(--iad-border) !important;
+}
+
+/* Animations */
+@keyframes iad-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.iad-animate-in {
+  animation: iad-fade-in 0.4s ease forwards;
+}
+
+/* Divider */
+.iad-divider {
+  border: none;
+  border-top: 1px solid var(--iad-border);
+  margin: var(--iad-space-6) 0;
+}
+
+/* Streamlit widgets — theme-aware */
+[data-theme="dark"] .stTextInput input,
+[data-theme="dark"] .stTextArea textarea,
+[data-theme="dark"] .stNumberInput input,
+[data-theme="dark"] .stSelectbox > div > div,
+[data-theme="dark"] [data-baseweb="select"] > div {
+  background-color: var(--iad-bg-elevated) !important;
+  color: var(--iad-text) !important;
+  border-color: var(--iad-border) !important;
+}
+[data-theme="dark"] .stDataFrame,
+[data-theme="dark"] [data-testid="stDataFrame"] {
+  background: var(--iad-bg-elevated) !important;
+}
+[data-theme="dark"] .stAlert {
+  background: var(--iad-bg-elevated) !important;
+  color: var(--iad-text) !important;
+}
+[data-theme="dark"] label,
+[data-theme="dark"] .stMarkdown,
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3 {
+  color: var(--iad-text);
+}
+[data-theme="dark"] .stButton > button[kind="secondary"] {
+  background: var(--iad-bg-elevated) !important;
+  color: var(--iad-text) !important;
+  border: 1px solid var(--iad-border) !important;
+}
+[data-theme="dark"] [data-testid="stFileUploader"] {
+  background: var(--iad-bg-muted) !important;
+  border: 1px dashed var(--iad-border) !important;
+  border-radius: var(--iad-radius-md) !important;
+}
+
+/* Auth gate */
+.iad-auth-wrap {
+  max-width: 420px;
+  margin: 3rem auto 2rem auto;
+  padding: var(--iad-space-6);
+  background: var(--iad-bg-elevated);
+  border: 1px solid var(--iad-border);
+  border-radius: var(--iad-radius-xl);
+  box-shadow: var(--iad-shadow-lg);
+}
+
+/* Reduce layout shift on rerun */
+[data-testid="stAppViewContainer"] > .main {
+  animation: iad-fade-in 0.25s ease;
+}

@@ -1,0 +1,5 @@
+"""Layout helpers — re-export from :mod:`iad.frontend.layouts` for flat imports."""
+from iad.frontend.layouts.dashboard import render_home_dashboard
+from iad.frontend.layouts.page import divider, section, setup_page
+
+__all__ = ["divider", "render_home_dashboard", "section", "setup_page"]
