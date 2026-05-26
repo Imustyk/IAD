@@ -270,11 +270,28 @@ with tab_anomaly:
 
 
 with tab_rec:
-    st.caption("Requires user · item · rating interaction columns (long format).")
+    st.caption(
+        "Requires three **different** columns: user ID, item ID, and numeric rating "
+        "(long-format interactions, e.g. user · movie · score)."
+    )
     all_cols = list(df.columns)
     user_col = st.selectbox("User column", all_cols, key="adv_rec_user")
-    item_col = st.selectbox("Item column", all_cols, key="adv_rec_item")
-    rating_col = st.selectbox("Rating column", num_cols or all_cols, key="adv_rec_rating")
+    item_options = [c for c in all_cols if c != user_col]
+    item_col = st.selectbox(
+        "Item column",
+        item_options or all_cols,
+        key="adv_rec_item",
+    )
+    rating_options = [
+        c for c in (num_cols or all_cols) if c not in (user_col, item_col)
+    ]
+    if not rating_options:
+        st.warning("Pick distinct columns. Rating must be numeric and different from user/item.")
+    rating_col = st.selectbox(
+        "Rating column",
+        rating_options or [c for c in all_cols if c not in (user_col, item_col)],
+        key="adv_rec_rating",
+    )
     users = df[user_col].dropna().unique().tolist() if user_col in df.columns else []
     if users:
         target = st.selectbox("Target user", users[:500], key="adv_rec_target")

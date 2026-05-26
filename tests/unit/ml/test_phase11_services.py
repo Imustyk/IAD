@@ -156,6 +156,37 @@ def test_recommendation_matrix(interactions) -> None:
 
 
 @pytest.mark.unit
+def test_recommendation_matrix_distinct_columns() -> None:
+    df = pd.DataFrame({"user": ["a", "b"], "rating": [1.0, 2.0]})
+    with pytest.raises(SchemaError, match="distinct"):
+        build_user_item_matrix(
+            df, user_column="user", item_column="user", rating_column="rating"
+        )
+
+
+@pytest.mark.unit
+def test_recommendation_matrix_missing_column() -> None:
+    df = pd.DataFrame({"user": ["a"], "item": ["b"]})
+    with pytest.raises(SchemaError, match="not found"):
+        build_user_item_matrix(
+            df, user_column="user", item_column="item", rating_column="missing"
+        )
+
+
+@pytest.mark.unit
+def test_recommendation_matrix_renamed_columns() -> None:
+    df = pd.DataFrame({
+        "user_id": ["u1", "u2", "u1"],
+        "item_id": ["i1", "i2", "i2"],
+        "score": [5.0, 3.0, 4.0],
+    })
+    matrix = build_user_item_matrix(
+        df, user_column="user_id", item_column="item_id", rating_column="score"
+    )
+    assert matrix.shape == (2, 2)
+
+
+@pytest.mark.unit
 def test_recommendation_service(interactions) -> None:
     rec = RecommendationService().cosine_similarity(
         interactions,

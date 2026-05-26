@@ -6,6 +6,24 @@ import pandas as pd
 from iad.core.exceptions import SchemaError
 
 
+def _select_column(df: pd.DataFrame, column: str) -> pd.Series:
+    """Return a 1-D series for ``column`` (handles duplicate column names in ``df``)."""
+    if column not in df.columns:
+        raise SchemaError(
+            f"Column {column!r} not found.",
+            user_message="Map user, item, and rating columns.",
+        )
+    selected = df[column]
+    if isinstance(selected, pd.DataFrame):
+        if selected.shape[1] != 1:
+            raise SchemaError(
+                f"Column {column!r} is ambiguous (duplicate names in the dataset).",
+                user_message="User, item, and rating must be three different columns.",
+            )
+        selected = selected.iloc[:, 0]
+    return selected.squeeze()
+
+
 def build_user_item_matrix(
     df: pd.DataFrame,
     *,
@@ -14,26 +32,32 @@ def build_user_item_matrix(
     rating_column: str,
 ) -> pd.DataFrame:
     """Pivot interactions into a users × items matrix (mean rating if duplicates)."""
-    for col in (user_column, item_column, rating_column):
-        if col not in df.columns:
-            raise SchemaError(
-                f"Column {col!r} not found.",
-                user_message="Map user, item, and rating columns.",
-            )
+    if len({user_column, item_column, rating_column}) < 3:
+        raise SchemaError(
+            "User, item, and rating columns must be distinct.",
+            user_message="Choose three different columns for user, item, and rating.",
+        )
 
-    frame = df[[user_column, item_column, rating_column]].copy()
-    frame[rating_column] = pd.to_numeric(frame[rating_column], errors="coerce")
-    frame = frame.dropna()
+    frame = pd.DataFrame({
+        "user": _select_column(df, user_column),
+        "item": _select_column(df, item_column),
+        "rating": _select_column(df, rating_column),
+    })
+
+    frame["rating"] = pd.to_numeric(frame["rating"], errors="coerce")
+    frame["user"] = frame["user"].astype(str)
+    frame["item"] = frame["item"].astype(str)
+    frame = frame.dropna(subset=["user", "item", "rating"])
     if frame.empty:
         raise SchemaError(
             "No valid interactions after cleaning.",
-            user_message="Check rating column is numeric.",
+            user_message="Rating column must be numeric. User and item columns need valid values.",
         )
 
     matrix = frame.pivot_table(
-        index=user_column,
-        columns=item_column,
-        values=rating_column,
+        index="user",
+        columns="item",
+        values="rating",
         aggfunc="mean",
     )
     return matrix
