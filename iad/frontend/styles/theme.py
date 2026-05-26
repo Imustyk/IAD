@@ -37,6 +37,7 @@ def inject_css() -> None:
     tokens_css = _read_css_file(style_dir / "tokens.css")
     components_css = _read_css_file(style_dir / "components.css")
     bridge_css = _read_css_file(style_dir / "streamlit-bridge.css")
+    embed_css = _read_css_file(style_dir / "embed.css")
 
     st.markdown(_fonts_link(), unsafe_allow_html=True)
     st.markdown(
@@ -53,23 +54,8 @@ def inject_css() -> None:
           padding-top: 1.25rem !important;
           padding-bottom: 2.5rem !important;
         }}
-        iframe[title="streamlit_components_v1.html"],
-        iframe[title="streamlit.iframe"],
-        [data-testid="stIFrame"] {{
-          border: none !important;
-          width: 100% !important;
-          max-width: 100% !important;
-          display: block !important;
-          margin-bottom: 0.75rem !important;
-          overflow: visible !important;
-        }}
-        [data-testid="stIFrame"] iframe {{
-          display: block !important;
-          width: 100% !important;
-          min-height: 3rem !important;
-          background: transparent !important;
-        }}
         {tokens_css}
+        {embed_css}
         {components_css}
         {bridge_css}
         </style>

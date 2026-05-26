@@ -1,4 +1,4 @@
-/* Embedded panels (iframe) — design system aligned with tokens.css */
+/* Embedded panels (in-document HTML) — design system aligned with tokens.css */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -11,18 +11,18 @@ body {
   overflow-x: hidden;
 }
 
-body.iad-panel {
+body.iad-panel,
+.iad-embed-root {
   margin: 0;
-  padding: 4px 0;
+  padding: 0;
   min-height: min-content;
-  background: transparent;
   color: #111827;
 }
 
 .iad-wrap {
   width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0 auto 0.75rem auto;
   padding: 0;
 }
 

@@ -38,5 +38,5 @@ def render_pipeline_timeline(steps: tuple[PipelineStep, ...] | list[PipelineStep
             f'<div class="iad-pipeline-desc">{esc(step.description)}</div>'
             f"</div></article>"
         )
-    body = f'<div class="iad-wrap"><div class="iad-pipeline">{"".join(cards)}</div></div>'
+    body = f'<div class="iad-embed-root"><div class="iad-wrap"><div class="iad-pipeline">{"".join(cards)}</div></div></div>'
     render_html_panel(body)

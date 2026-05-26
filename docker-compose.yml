@@ -4,7 +4,7 @@
 #   cp .env.example .env
 #   docker compose up --build
 #
-# UI:  http://localhost:8501  (or http://localhost via nginx)
+# UI:  http://localhost:8502  (Docker; local dev uses 8501 — see scripts/run_streamlit.py)
 # API: http://localhost:8000/docs
 
 name: iad
@@ -41,7 +41,7 @@ services:
       IAD_DATABASE_ENABLED: "true"
       IAD_AUTO_CREATE_DB: "false"
       IAD_RUN_MIGRATIONS: "true"
-      IAD_CORS_ORIGINS: '["http://localhost:8501","http://localhost","http://127.0.0.1:8501"]'
+      IAD_CORS_ORIGINS: '["http://localhost:8501","http://localhost:8502","http://localhost","http://127.0.0.1:8501","http://127.0.0.1:8502"]'
     ports:
       - "${IAD_API_PORT:-8000}:8000"
     volumes:
@@ -64,8 +64,13 @@ services:
     environment:
       IAD_DATABASE_URL: postgresql+psycopg://${IAD_POSTGRES_USER:-iad}:${IAD_POSTGRES_PASSWORD:-iad}@postgres:5432/${IAD_POSTGRES_DB:-iad}
       IAD_DATABASE_ENABLED: ${IAD_DATABASE_ENABLED:-false}
+      STREAMLIT_SERVER_MAX_UPLOAD_SIZE: "200"
+      STREAMLIT_SERVER_FILE_WATCHER_TYPE: "none"
+      STREAMLIT_SERVER_RUN_ON_SAVE: "false"
+      STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION: "false"
+      STREAMLIT_SERVER_ENABLE_CORS: "false"
     ports:
-      - "${IAD_STREAMLIT_PORT:-8501}:8501"
+      - "${IAD_STREAMLIT_PORT:-8502}:8501"
     volumes:
       - iad_data:/app/data
       - iad_models:/app/models

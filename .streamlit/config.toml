@@ -8,7 +8,11 @@ font = "sans serif"
 
 [server]
 headless = true
-runOnSave = true
+runOnSave = false
+fileWatcherType = "none"
+maxUploadSize = 200
+enableXsrfProtection = false
+enableCORS = false
 
 [browser]
 gatherUsageStats = false

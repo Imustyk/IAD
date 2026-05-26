@@ -58,27 +58,35 @@ with tab_sample:
 
 
 with tab_upload:
+    st.caption(
+        "If upload fails with a network error, hard-refresh the page (Cmd+Shift+R) "
+        "and ensure only one Streamlit server is running on this port."
+    )
     uploaded = st.file_uploader(
         "Upload a CSV, TSV, Excel, JSON or Parquet file",
         type=["csv", "tsv", "txt", "xlsx", "xls", "json", "parquet"],
         accept_multiple_files=False,
+        key="main_dataset_upload",
     )
     if uploaded is not None:
-        try:
-            if settings.PERF_USE_POLARS:
-                from iad.frontend.services.dataset import load_uploaded
+        upload_sig = f"{uploaded.name}:{uploaded.size}"
+        if st.session_state.get("_dataset_upload_sig") != upload_sig:
+            st.session_state["_dataset_upload_sig"] = upload_sig
+            try:
+                if settings.PERF_USE_POLARS:
+                    from iad.frontend.services.dataset import load_uploaded
 
-                view = load_uploaded(uploaded)
-                alerts.success(
-                    f"Loaded **{uploaded.name}** — {view.summary_line()} "
-                    f"(Polars-accelerated path)."
-                )
-            else:
-                df = load_uploaded_file(uploaded)
-                _on_load(df, uploaded.name)
-            st.caption(f"File size: {humanize_bytes(uploaded.size)}")
-        except Exception as exc:
-            alerts.error(f"Failed to read the file: {exc}", show_details=True, exc=exc)
+                    view = load_uploaded(uploaded)
+                    alerts.success(
+                        f"Loaded **{uploaded.name}** — {view.summary_line()} "
+                        f"(Polars-accelerated path)."
+                    )
+                else:
+                    df = load_uploaded_file(uploaded)
+                    _on_load(df, uploaded.name)
+                st.caption(f"File size: {humanize_bytes(uploaded.size)}")
+            except Exception as exc:
+                alerts.error(f"Failed to read the file: {exc}", show_details=True, exc=exc)
 
 
 with tab_url:

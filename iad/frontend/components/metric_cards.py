@@ -47,5 +47,5 @@ def render_metric_row(specs: list[MetricSpec], columns: int | None = None) -> No
         return
     n = max(1, min(columns or len(specs), 4))
     cards = "".join(_metric_card_html(spec) for spec in specs[:n])
-    body = f'<div class="iad-wrap"><div class="iad-metric-grid iad-metric-grid-{n}">{cards}</div></div>'
+    body = f'<div class="iad-embed-root"><div class="iad-wrap"><div class="iad-metric-grid iad-metric-grid-{n}">{cards}</div></div></div>'
     render_html_panel(body)

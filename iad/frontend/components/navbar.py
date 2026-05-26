@@ -1,6 +1,8 @@
 """Sidebar — grouped navigation (single source; no duplicate dashboard links)."""
 from __future__ import annotations
 
+import time
+
 import streamlit as st
 
 from iad.config.settings import get_settings
@@ -53,7 +55,17 @@ def render_backend_status() -> None:
     """Show FastAPI backend connectivity in the sidebar."""
     settings = get_settings()
     client = BackendClient()
-    health = client.health()
+
+    cache_key = "_iad_api_health"
+    cache_ts_key = "_iad_api_health_ts"
+    now = time.monotonic()
+    cached = st.session_state.get(cache_key)
+    cached_ts = float(st.session_state.get(cache_ts_key, 0.0))
+    if cached is None or now - cached_ts > 30.0:
+        cached = client.health()
+        st.session_state[cache_key] = cached
+        st.session_state[cache_ts_key] = now
+    health = cached
 
     st.sidebar.markdown('<p class="iad-nav-group-label">Backend API</p>', unsafe_allow_html=True)
     if health.ok:
