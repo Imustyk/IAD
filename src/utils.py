@@ -97,7 +97,12 @@ def humanize_bytes(num_bytes: int) -> str:
 
 def detect_task_type(target: pd.Series) -> str:
     """Return 'classification' or 'regression' based on the target series."""
-    if target.dtype == "object" or pd.api.types.is_bool_dtype(target) or str(target.dtype).startswith("category"):
+    if (
+        pd.api.types.is_object_dtype(target)
+        or pd.api.types.is_string_dtype(target)
+        or pd.api.types.is_bool_dtype(target)
+        or str(target.dtype).startswith("category")
+    ):
         return "classification"
     nunique = target.nunique(dropna=True)
     if pd.api.types.is_integer_dtype(target) and nunique <= 20:

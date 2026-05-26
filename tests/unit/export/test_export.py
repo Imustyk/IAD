@@ -1,10 +1,12 @@
 """Phase 13 export & reporting tests."""
 from __future__ import annotations
 
+import builtins
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import pytest
 from fastapi.testclient import TestClient
 
@@ -127,6 +129,7 @@ def test_export_metrics_and_chart(exports_dir: Path, sample_report: AnalyticsRep
 
 
 def test_automated_export_bundle(exports_dir: Path, sample_report: AnalyticsReport) -> None:
+    kaleido_available.cache_clear()
     pytest.importorskip("reportlab")
     pytest.importorskip("docx")
     df = pd.DataFrame({"x": [1, 2, 3, 4], "y": [10, 20, 30, 40]})
@@ -166,6 +169,7 @@ def test_export_bundle(exports_dir: Path, sample_report: AnalyticsReport) -> Non
 
 
 def test_png_export_requires_kaleido(exports_dir: Path) -> None:
+    kaleido_available.cache_clear()
     fig = px.scatter(x=[1], y=[1])
     dest = exports_dir / "chart.png"
     if kaleido_available():
@@ -174,6 +178,93 @@ def test_png_export_requires_kaleido(exports_dir: Path) -> None:
     else:
         with pytest.raises(ExportError, match="kaleido"):
             export_plotly_figure(fig, dest, fmt=ExportFormat.PNG)
+
+
+def test_kaleido_available_cached() -> None:
+    kaleido_available.cache_clear()
+    first = kaleido_available()
+    second = kaleido_available()
+    assert first is second
+
+
+def test_kaleido_available_false_when_not_installed(monkeypatch) -> None:
+    kaleido_available.cache_clear()
+    real_import = builtins.__import__
+
+    def _fake_import(name, globals=None, locals=None, fromlist=(), level=0):  # noqa: ANN001
+        if name == "kaleido":
+            raise ImportError("no kaleido")
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", _fake_import)
+    assert kaleido_available() is False
+
+
+def test_kaleido_available_true_when_probe_succeeds(monkeypatch) -> None:
+    kaleido_available.cache_clear()
+
+    def _noop_write(self, path, **_kwargs) -> None:  # noqa: ANN001
+        Path(path).write_bytes(b"\x89PNG\r\n\x1a\n")
+
+    monkeypatch.setattr(go.Figure, "write_image", _noop_write)
+    assert kaleido_available() is True
+
+
+def test_export_unsupported_chart_format(exports_dir: Path) -> None:
+    fig = px.scatter(x=[1], y=[1])
+    with pytest.raises(ExportError, match="Unsupported"):
+        export_plotly_figure(fig, exports_dir / "chart.pdf", fmt=ExportFormat.PDF)
+
+
+def test_png_export_write_failure(monkeypatch, exports_dir: Path) -> None:
+    kaleido_available.cache_clear()
+    if not kaleido_available():
+        pytest.skip("kaleido PNG export is not available in this environment")
+    fig = px.scatter(x=[1], y=[1])
+
+    def _boom(*_args, **_kwargs) -> None:
+        raise RuntimeError("renderer down")
+
+    monkeypatch.setattr(fig, "write_image", _boom)
+    with pytest.raises(ExportError, match="PNG export failed"):
+        export_plotly_figure(fig, exports_dir / "fail.png", fmt=ExportFormat.PNG)
+
+
+def test_png_export_success_with_mocked_kaleido(monkeypatch, exports_dir: Path) -> None:
+    kaleido_available.cache_clear()
+    monkeypatch.setattr("iad.export.charts.kaleido_available", lambda: True)
+
+    def _write_png(self, path, **_kwargs) -> None:  # noqa: ANN001
+        Path(path).write_bytes(b"\x89PNG\r\n\x1a\n")
+
+    monkeypatch.setattr(go.Figure, "write_image", _write_png)
+    fig = px.scatter(x=[1, 2], y=[2, 4])
+    result = export_plotly_figure(fig, exports_dir / "ok.png", fmt=ExportFormat.PNG)
+    assert result.path.exists()
+    assert result.content_type == "image/png"
+
+
+def test_automated_export_skips_failed_png(
+    monkeypatch, exports_dir: Path, sample_report: AnalyticsReport
+) -> None:
+    from iad.export import automated as auto_mod
+
+    pytest.importorskip("reportlab")
+    pytest.importorskip("docx")
+    real_export = export_plotly_figure
+
+    def _export(fig, destination, *, fmt=ExportFormat.HTML, **kwargs):
+        if fmt == ExportFormat.PNG:
+            raise ExportError("png failed", code="kaleido_export_failed")
+        return real_export(fig, destination, fmt=fmt, **kwargs)
+
+    monkeypatch.setattr(auto_mod, "kaleido_available", lambda: True)
+    monkeypatch.setattr(auto_mod, "export_plotly_figure", _export)
+    df = pd.DataFrame({"x": [1, 2, 3, 4], "y": [10, 20, 30, 40]})
+    service = ExportService(exports_dir=exports_dir)
+    bundle = service.generate_automated_report(sample_report, df=df, create_zip=False)
+    assert bundle.manifest_path.exists()
+    assert not any(p.suffix == ".png" for p in bundle.run_dir.rglob("*"))
 
 
 def test_api_export_docx(monkeypatch) -> None:

@@ -1,6 +1,8 @@
 """Plotly figure export — HTML (always) and PNG (when Kaleido is available)."""
 from __future__ import annotations
 
+import tempfile
+from functools import lru_cache
 from pathlib import Path
 
 import plotly.graph_objects as go
@@ -12,12 +14,21 @@ from iad.export.models import ExportFormat, ExportResult
 logger = get_logger("iad.export.charts")
 
 
+@lru_cache(maxsize=1)
 def kaleido_available() -> bool:
+    """True when kaleido is installed and can render at least one PNG."""
     try:
         import kaleido  # noqa: F401
-
-        return True
     except ImportError:
+        return False
+
+    try:
+        probe = go.Figure(data=[go.Scatter(x=[0], y=[0])])
+        with tempfile.NamedTemporaryFile(suffix=".png") as tmp:
+            probe.write_image(tmp.name, width=8, height=8)
+        return True
+    except Exception as exc:  # pragma: no cover — environment-specific
+        logger.debug("kaleido installed but PNG export unavailable: %s", exc)
         return False
 
 
@@ -45,10 +56,16 @@ def export_plotly_figure(
     if fmt == ExportFormat.PNG:
         if not kaleido_available():
             raise ExportError(
-                "PNG export requires kaleido. Install with: pip install kaleido",
+                "PNG export requires a working kaleido install (pip install kaleido)",
                 code="kaleido_missing",
             )
-        fig.write_image(str(destination), width=width, height=height, scale=2)
+        try:
+            fig.write_image(str(destination), width=width, height=height, scale=2)
+        except Exception as exc:
+            raise ExportError(
+                f"PNG export failed: {exc}",
+                code="kaleido_export_failed",
+            ) from exc
         return ExportResult(
             format=fmt,
             path=destination,

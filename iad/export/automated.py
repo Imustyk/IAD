@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
+from iad.core.exceptions import ExportError
 from iad.core.logging import get_logger
 from iad.core.observability.performance import timed_block
 from iad.export.charts import export_plotly_figure, kaleido_available
@@ -105,8 +106,13 @@ def generate_automated_report(
                     artifacts.append(export_plotly_figure(fig, html_dest, fmt=ExportFormat.HTML))
                 if embed_charts_in_pdf and kaleido_available():
                     png_dest = charts_dir / f"{name}.png"
-                    artifacts.append(export_plotly_figure(fig, png_dest, fmt=ExportFormat.PNG))
-                    chart_paths_for_pdf.append(png_dest)
+                    try:
+                        artifacts.append(
+                            export_plotly_figure(fig, png_dest, fmt=ExportFormat.PNG)
+                        )
+                        chart_paths_for_pdf.append(png_dest)
+                    except ExportError as exc:
+                        logger.warning("skipping PNG chart %s: %s", name, exc)
 
         report_with_charts = AnalyticsReport(
             title=report.title,

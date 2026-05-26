@@ -82,6 +82,24 @@ class TrainingConfig:
         return self.primary_metric or primary_metric_name(self.task)
 
 
+def _validate_task_target(task: Task, target: str, y: pd.Series) -> None:
+    """Reject regression on text/category targets (common UI mis-inference)."""
+    non_numeric = (
+        pd.api.types.is_object_dtype(y)
+        or pd.api.types.is_string_dtype(y)
+        or pd.api.types.is_bool_dtype(y)
+        or str(y.dtype).startswith("category")
+    )
+    if task == "regression" and non_numeric:
+        raise TrainingError(
+            f"column {target!r} is non-numeric; use classification",
+            user_message=(
+                f"Target column «{target}» contains text or category labels. "
+                "Select **classification** as the task type, or choose a numeric target."
+            ),
+        )
+
+
 # ---------------------------------------------------------------------------
 # Service
 # ---------------------------------------------------------------------------
@@ -149,6 +167,7 @@ class TrainingService:
         data = df[list(feature_columns) + [target]].dropna(subset=[target]).copy()
         X = data[feature_columns]
         y = data[target]
+        _validate_task_target(config.task, target, y)
         stratify = y if (config.task == "classification" and y.nunique(dropna=True) > 1) else None
         X_train, X_test, y_train, y_test = train_test_split(
             X,
