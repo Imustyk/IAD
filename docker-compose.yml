@@ -18,7 +18,7 @@ services:
       POSTGRES_PASSWORD: ${IAD_POSTGRES_PASSWORD:-iad}
       POSTGRES_DB: ${IAD_POSTGRES_DB:-iad}
     ports:
-      - "${IAD_POSTGRES_PORT:-5432}:5432"
+      - "${IAD_POSTGRES_PORT:-5433}:5432"
     volumes:
       - iad_pg_data:/var/lib/postgresql/data
     healthcheck:
@@ -34,7 +34,8 @@ services:
       target: api
     restart: unless-stopped
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       IAD_DATABASE_URL: postgresql+psycopg://${IAD_POSTGRES_USER:-iad}:${IAD_POSTGRES_PASSWORD:-iad}@postgres:5432/${IAD_POSTGRES_DB:-iad}
       IAD_DATABASE_ENABLED: "true"
@@ -58,7 +59,8 @@ services:
       target: streamlit
     restart: unless-stopped
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       IAD_DATABASE_URL: postgresql+psycopg://${IAD_POSTGRES_USER:-iad}:${IAD_POSTGRES_PASSWORD:-iad}@postgres:5432/${IAD_POSTGRES_DB:-iad}
       IAD_DATABASE_ENABLED: ${IAD_DATABASE_ENABLED:-false}

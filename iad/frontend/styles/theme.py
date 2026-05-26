@@ -60,6 +60,14 @@ def inject_css() -> None:
           width: 100% !important;
           max-width: 100% !important;
           display: block !important;
+          margin-bottom: 0.75rem !important;
+          overflow: visible !important;
+        }}
+        [data-testid="stIFrame"] iframe {{
+          display: block !important;
+          width: 100% !important;
+          min-height: 3rem !important;
+          background: transparent !important;
         }}
         {tokens_css}
         {components_css}

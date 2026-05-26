@@ -35,7 +35,8 @@ COPY pages ./pages
 COPY alembic.ini ./
 
 RUN pip install --upgrade pip setuptools wheel \
-    && pip install -r requirements-prod.txt
+    && pip install -r requirements-prod.txt \
+    && pip install --no-deps .
 
 # ---------------------------------------------------------------------------
 # Runtime base — shared OS libraries for ML stacks
@@ -46,11 +47,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONPATH=/app \
-    # Streamlit in containers
     STREAMLIT_SERVER_HEADLESS=true \
     STREAMLIT_BROWSER_GATHER_USAGE_STATS=false \
     STREAMLIT_SERVER_ENABLECORS=false \
-    STREAMLIT_SERVER_ENABLEXSRFPROTECTION=true
+    STREAMLIT_SERVER_ENABLEXSRFPROTECTION=true \
+    STREAMLIT_SERVER_RUN_ON_SAVE=false \
+    STREAMLIT_SERVER_FILE_WATCHER_TYPE=none
 
 WORKDIR /app
 
@@ -68,6 +70,7 @@ COPY src ./src
 COPY app.py ./
 COPY pages ./pages
 COPY alembic.ini ./
+COPY .streamlit ./.streamlit
 COPY docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \

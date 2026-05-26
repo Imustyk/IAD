@@ -27,21 +27,23 @@ def render_hero(
 
 
 def render_section_header(title: str, description: str | None = None) -> None:
-    desc = f"<p>{esc(description)}</p>" if description else ""
+    desc = f'<p class="iad-section-desc">{esc(description)}</p>' if description else ""
     body = (
-        f'<div class="iad-wrap iad-section">'
+        f'<div class="iad-wrap">'
+        f'<div class="iad-section iad-surface">'
         f"<h3>{esc(title)}</h3>{desc}"
-        f"</div>"
+        f"</div></div>"
     )
     render_html_panel(body)
 
 
 def render_page_header(title: str, caption: str | None = None) -> None:
-    cap = f"<p>{esc(caption)}</p>" if caption else ""
+    cap = f'<p class="iad-page-caption">{esc(caption)}</p>' if caption else ""
     body = (
-        f'<div class="iad-wrap iad-page-hdr">'
+        f'<div class="iad-wrap">'
+        f'<div class="iad-page-hdr iad-surface">'
         f"<h1>{esc(title)}</h1>{cap}"
-        f"</div>"
+        f"</div></div>"
     )
     render_html_panel(body)
 
@@ -54,7 +56,7 @@ def render_empty_state(
 ) -> None:
     hint_html = f'<p class="iad-empty-hint">{esc(hint)}</p>' if hint else ""
     body = (
-        f'<div class="iad-wrap"><div class="iad-empty">'
+        f'<div class="iad-wrap"><div class="iad-empty iad-surface">'
         f"<strong>{esc(title)}</strong>"
         f"<p>{esc(message)}</p>{hint_html}"
         f"</div></div>"

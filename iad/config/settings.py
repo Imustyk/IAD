@@ -103,6 +103,8 @@ class Settings(BaseSettings):
     CORS_ALLOW_CREDENTIALS: bool = True
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
+    API_BASE_URL: str | None = None  # override e.g. http://127.0.0.1:8000
+    API_TIMEOUT_SECONDS: float = 3.0
 
     # -- Database (Phase 6) -------------------------------------------------
     DATABASE_URL: str | None = None
@@ -202,6 +204,15 @@ class Settings(BaseSettings):
     @property
     def is_test(self) -> bool:
         return self.ENVIRONMENT == "test"
+
+    def api_base_url(self) -> str:
+        """Public base URL for the FastAPI backend (Streamlit / clients)."""
+        if self.API_BASE_URL:
+            return self.API_BASE_URL.rstrip("/")
+        host = self.API_HOST
+        if host in {"0.0.0.0", "::", ""}:
+            host = "127.0.0.1"
+        return f"http://{host}:{self.API_PORT}"
 
     def safe_dict(self) -> dict[str, object]:
         """Return a dict suitable for logging — strips secrets."""

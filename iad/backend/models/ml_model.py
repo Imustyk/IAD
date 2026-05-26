@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Boolean, ForeignKey, Index, String, Text
+from sqlalchemy import Boolean, ForeignKey, Index, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
@@ -32,7 +32,7 @@ class MLModelRecord(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     task_type: Mapped[str] = mapped_column(String(32), nullable=False)
     artifact_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     model_card_json: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
-    is_champion: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
+    is_champion: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=text("false"))
     version_tag: Mapped[str | None] = mapped_column(String(64), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 

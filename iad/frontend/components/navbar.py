@@ -7,6 +7,7 @@ from iad.config.settings import get_settings
 from iad.frontend.components.alerts import render_status_pill
 from iad.frontend.routes import NAV_GROUPS
 from iad.frontend.streamlit_compat import page_link as _page_link
+from iad.frontend.services.api_client import BackendClient
 from iad.state.session import (
     KEY_DATASET,
     KEY_DATASET_NAME,
@@ -48,6 +49,28 @@ def render_workspace_status() -> None:
         render_status_pill(f"Target: {target}", "info")
 
 
+def render_backend_status() -> None:
+    """Show FastAPI backend connectivity in the sidebar."""
+    settings = get_settings()
+    client = BackendClient()
+    health = client.health()
+
+    st.sidebar.markdown('<p class="iad-nav-group-label">Backend API</p>', unsafe_allow_html=True)
+    if health.ok:
+        meta = health.version or settings.APP_VERSION
+        render_status_pill(f"API online · v{meta}", "ok")
+        st.sidebar.caption(f"{client.base_url}")
+        try:
+            st.sidebar.link_button("Open API docs", client.docs_url(), use_container_width=True)
+        except TypeError:
+            st.sidebar.markdown(f"[API docs]({client.docs_url()})")
+    else:
+        render_status_pill("API offline", "warn")
+        st.sidebar.caption(
+            f"Start with: `python scripts/run_api.py --reload` · {client.base_url}"
+        )
+
+
 def render_sidebar_navigation() -> None:
     """Grouped nav with icons; active page highlighted by Streamlit."""
     for group in NAV_GROUPS:
@@ -84,5 +107,6 @@ def render_sidebar_settings() -> None:
 def setup_sidebar() -> None:
     render_sidebar_branding()
     render_workspace_status()
+    render_backend_status()
     render_sidebar_navigation()
     render_sidebar_settings()

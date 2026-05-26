@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Grafana datasource provisioning",
+  "description": "Grafana provisioning manifest (apiVersion: 1). See Grafana docs: administration/provisioning.",
+  "type": "object",
+  "required": ["apiVersion", "datasources"],
+  "additionalProperties": true,
+  "properties": {
+    "apiVersion": {
+      "type": "integer",
+      "enum": [1]
+    },
+    "deleteDatasources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "orgId": { "type": "integer" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "datasources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "additionalProperties": true,
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "uid": { "type": "string" },
+          "access": { "type": "string", "enum": ["proxy", "direct"] },
+          "url": { "type": "string" },
+          "isDefault": { "type": "boolean" },
+          "editable": { "type": "boolean" },
+          "jsonData": { "type": "object" },
+          "secureJsonData": { "type": "object" }
+        }
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../schemas/datasource-provisioning.schema.json
 apiVersion: 1
 
 datasources:

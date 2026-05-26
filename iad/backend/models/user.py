@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Index, String, Text
+from sqlalchemy import Boolean, Index, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from iad.backend.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -21,9 +21,9 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False, index=True)
     hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
     full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="1")
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("true"))
     is_superuser: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False, server_default="0"
+        Boolean, nullable=False, default=False, server_default=text("false")
     )
     role: Mapped[str] = mapped_column(
         String(32), nullable=False, default="analyst", server_default="analyst"

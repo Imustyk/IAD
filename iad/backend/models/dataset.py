@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
@@ -31,7 +31,7 @@ class Dataset(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     schema_json: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     checksum_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     source: Mapped[str | None] = mapped_column(String(64), nullable=True)  # upload | url | sample
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="1")
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("true"))
 
     owner: Mapped[User] = relationship(back_populates="datasets")
     experiments: Mapped[list[Experiment]] = relationship(back_populates="dataset")
